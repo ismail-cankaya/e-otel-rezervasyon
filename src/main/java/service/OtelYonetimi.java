@@ -1,9 +1,9 @@
 package service;
 
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-import model.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +12,20 @@ import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
+
+import model.BeklemeListesi;
+import model.Musteri;
+import model.Oda;
+import model.Rezervasyon;
 
 public class OtelYonetimi {
     private Map<String, Musteri> musteriler = new HashMap<>();
@@ -22,6 +36,7 @@ public class OtelYonetimi {
     private final String DOSYA_ADI = "otel_verileri.json";
     private final Gson gson;
 
+    // Java objesini JSON'a ve JSON'u Java objesine dönüştürmek için Gson kütüphanesi
     public OtelYonetimi() {
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
@@ -29,10 +44,10 @@ public class OtelYonetimi {
                 .setPrettyPrinting()
                 .create();
 
-        verileriYukle();
+        upload();
     }
-
-    private void verileriKaydet() {
+    // Verileri JSON formatında kaydeder
+    private void save() {
         try (Writer writer = Files.newBufferedWriter(Paths.get(DOSYA_ADI))) {
             Map<String, Object> tumVeri = new HashMap<>();
             tumVeri.put("musteriler", musteriler);
@@ -41,16 +56,18 @@ public class OtelYonetimi {
             tumVeri.put("arsiv", tamamlananRezervasyonlar);
             gson.toJson(tumVeri, writer);
         } catch (IOException e) {
-            System.out.println("JSON Kayıt Hatası: " + e.getMessage());
+            System.out.println("Hata! Verileriniz kaydedilemedi " + e.getMessage());
         }
     }
 
-    private void verileriYukle() {
+    // Önceki verileri okur, eğer veri yoksa dosya oluşturur ve odaları ekler
+    private void upload() {
         File dosya = new File(DOSYA_ADI);
+        // Dosya kontrolü
         if (!dosya.exists()) {
-            System.out.println("Kayıtlı veri bulunamadı. 1-100 arası odalar oluşturuluyor...");
-            varsayilanOdalariEkle();
-            verileriKaydet();
+            System.out.println("Kayıtlı veri bulunamadı. 1-100 arası odalar oluşturuldu.");
+            odaEkle();
+            save();
             return;
         }
 
@@ -73,7 +90,7 @@ public class OtelYonetimi {
             System.out.println("Sistem: Veriler dosyadan yüklendi. Oda sayısı: " + odalar.size());
         } catch (Exception e) {
             System.out.println("Veri yüklenirken hata oluştu, odalar yeniden oluşturuluyor.");
-            varsayilanOdalariEkle();
+            odaEkle();
         }
     }
 
@@ -95,11 +112,11 @@ public class OtelYonetimi {
                 Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.odaNo, baslangic, bitis);
                 talepEdilenOda.aktifRezervasyonlar.add(yeniRezervasyon);
                 System.out.println("Başarılı: " + odaNo + " numaralı odaya rezervasyon yapıldı.");
-                verileriKaydet();
+                save();
             } else {
                 System.out.println("Uyarı: Oda dolu! Müşteri bekleme listesine alınıyor.");
                 beklemeListesi.kuyrugaEkle(musteri);
-                verileriKaydet();
+                save();
             }
         } catch (DateTimeParseException e) {
             System.out.println("Hata: Lütfen tarihleri YYYY-MM-DD formatında giriniz.");
@@ -127,7 +144,7 @@ public class OtelYonetimi {
             oda.aktifRezervasyonlar.remove(iptalEdilecek);
             tamamlananRezervasyonlar.put(iptalEdilecek.bitisTarihi, iptalEdilecek);
             System.out.println("Çıkış başarılı. Kayıt arşive aktarıldı.");
-            verileriKaydet();
+            save();
         } else {
             System.out.println("Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.");
         }
@@ -155,7 +172,7 @@ public class OtelYonetimi {
 
     // --------------------------------------
 
-    private void varsayilanOdalariEkle() {
+    private void odaEkle() {
         for (int i = 1; i <= 100; i++) {
             String odaNo = String.valueOf(i);
             int kapasite = (i % 5 == 0) ? 4 : (i % 2 == 0 ? 3 : 2);
