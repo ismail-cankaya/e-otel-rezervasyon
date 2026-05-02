@@ -109,10 +109,10 @@ class OtelYonetimi {
     // HashMap ile hızlı erişim
     private Map<String, Musteri> musteriler = new HashMap<>();
     private Map<String, Oda> odalar = new HashMap<>();
-    
+
     // SIFIRDAN: Bağlı Liste ile Bekleme kuyruğu
     private BeklemeListesi beklemeListesi = new BeklemeListesi();
-    
+
     // BST (TreeMap) ile kronolojik arşiv
     private TreeMap<LocalDate, Rezervasyon> tamamlananRezervasyonlar = new TreeMap<>();
 
@@ -195,7 +195,7 @@ class OtelYonetimi {
 
 // --- 4. KONSOL ARAYÜZÜ (Main) ---
 
-public class Main {
+public class Reservasyon {
     public static void main(String[] args) {
         OtelYonetimi sistem = new OtelYonetimi();
         Scanner scanner = new Scanner(System.in);
@@ -208,7 +208,7 @@ public class Main {
             System.out.println("4 - Arşiv Kayıtlarını (BST) Görüntüle");
             System.out.println("5 - Çıkış");
             System.out.print("Seçiminiz: ");
-            
+
             String secim = scanner.nextLine();
 
             switch (secim) {
