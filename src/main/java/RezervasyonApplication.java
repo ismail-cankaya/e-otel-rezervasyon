@@ -1,4 +1,4 @@
-import service.OtelYonetimi;
+import service.OtelYonetimi; // Service paketindeki OtelYonetimi sınıfını çağırıyoruz
 import java.util.Scanner;
 
 public class RezervasyonApplication {

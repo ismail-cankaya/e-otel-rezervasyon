@@ -7,19 +7,20 @@ public class Rezervasyon implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public Musteri musteri;
-    public Oda oda;
+    public String odaNo;
     public LocalDate baslangicTarihi;
     public LocalDate bitisTarihi;
 
-    public Rezervasyon(Musteri musteri, Oda oda, LocalDate baslangicTarihi, LocalDate bitisTarihi) {
+    public Rezervasyon(Musteri musteri, String odaNo, LocalDate baslangicTarihi, LocalDate bitisTarihi) {
         this.musteri = musteri;
-        this.oda = oda;
+        this.odaNo = odaNo;
         this.baslangicTarihi = baslangicTarihi;
         this.bitisTarihi = bitisTarihi;
     }
 
+    // Ekrana RAM adresi yerine düzgün metin yazdırmasını sağlayan sihirli metot:
     @Override
     public String toString() {
-        return "Müşteri: " + musteri.adSoyad + " | Oda: " + oda.odaNo + " | Tarih: " + baslangicTarihi + " -> " + bitisTarihi;
+        return "Müşteri: " + musteri.adSoyad + " | Oda: " + odaNo + " | Tarih: " + baslangicTarihi + " -> " + bitisTarihi;
     }
 }
