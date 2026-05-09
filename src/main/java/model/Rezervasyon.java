@@ -18,7 +18,6 @@ public class Rezervasyon implements Serializable {
         this.bitisTarihi = bitisTarihi;
     }
 
-    // Ekrana RAM adresi yerine düzgün metin yazdırmasını sağlayan sihirli metot:
     @Override
     public String toString() {
         return "Müşteri: " + musteri.adSoyad + " | Oda: " + odaNo + " | Tarih: " + baslangicTarihi + " -> " + bitisTarihi;
