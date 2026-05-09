@@ -28,14 +28,16 @@ import model.Oda;
 import model.Rezervasyon;
 
 public class OtelYonetimi {
+    // Verileri hafızada tutacak yapılar
     private Map<String, Musteri> musteriler = new HashMap<>();
     private Map<String, Oda> odalar = new HashMap<>();
-    private BeklemeListesi beklemeListesi = new BeklemeListesi();
+    private BeklemeListesi beklemeListesi = new BeklemeListesi(); // FIFO bekleme listesi - Kendi yazdığımız sınıf
     private TreeMap<LocalDate, Rezervasyon> tamamlananRezervasyonlar = new TreeMap<>();
 
     private final String DOSYA_ADI = "otel_verileri.json";
     private final Gson gson;
 
+    // Consructor kullanarak Gson'u LocalDate desteğiyle yapılandırıyoruz ve varsa mevcut verileri yüklüyoruz
     public OtelYonetimi() {
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
@@ -45,6 +47,7 @@ public class OtelYonetimi {
         upload();
     }
 
+    // Verileri JSON formatında dosyaya kaydeder
     private void save() {
         try (Writer writer = Files.newBufferedWriter(Paths.get(DOSYA_ADI))) {
             Map<String, Object> tumVeri = new HashMap<>();
@@ -58,6 +61,7 @@ public class OtelYonetimi {
         }
     }
 
+    // Dosyadan JSON formatında verileri okuyarak hafızaya yükler
     private void upload() {
         File dosya = new File(DOSYA_ADI);
         if (!dosya.exists()) {
@@ -66,9 +70,12 @@ public class OtelYonetimi {
             return;
         }
 
+        // dosya okuma işlemleri
         try (Reader reader = Files.newBufferedReader(Paths.get(DOSYA_ADI))) {
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
-
+            
+            //Json'dan gelen verileri uygun türlere dönüştürerek hafızaya yüklüyoruz
+            //TypeToken kullanarak verilerin türünü belirtiyoruz çünkü Gson, generic türleri doğrudan tanımlamakta zorlanır
             Type musterilerType = new TypeToken<Map<String, Musteri>>(){}.getType();
             musteriler = gson.fromJson(jsonObject.get("musteriler"), musterilerType);
 
@@ -87,7 +94,8 @@ public class OtelYonetimi {
         }
     }
 
-    // JavaFX için String döndürüyoruz
+    // Müşteri kaydı ve rezervasyon işlemini tek bir metotta birleştiriyoruz. Bu metot, formdan gelen bilgileri alır, doğrular ve rezervasyon yapmaya çalışır.
+    // JavaFX'ten String döndürüyoruz çünkü kullanıcıya geri bildirim vermemiz gerekiyor
     public String musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih) {
         try {
             LocalDate baslangic = LocalDate.parse(basTarih);
