@@ -1,5 +1,10 @@
 {
-  "musteriler": {},
+  "musteriler": {
+    "100": {
+      "tcNo": "100",
+      "adSoyad": "ismail çankaya"
+    }
+  },
   "arsiv": {},
   "odalar": {
     "88": {
@@ -115,7 +120,17 @@
     "1": {
       "odaNo": "1",
       "kapasite": 2,
-      "aktifRezervasyonlar": []
+      "aktifRezervasyonlar": [
+        {
+          "musteri": {
+            "tcNo": "100",
+            "adSoyad": "ismail çankaya"
+          },
+          "odaNo": "1",
+          "baslangicTarihi": "2026-05-03",
+          "bitisTarihi": "2026-06-04"
+        }
+      ]
     },
     "2": {
       "odaNo": "2",
