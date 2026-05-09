@@ -45,7 +45,8 @@ public class RezervasyonApplication extends Application {
 
         tabPane.getTabs().addAll(tabRezervasyon, tabCikis, tabRaporlar);
 
-        Scene scene = new Scene(tabPane, 500, 420);
+        // Form en boy oranı
+        Scene scene = new Scene(tabPane, 400, 320);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -66,7 +67,7 @@ public class RezervasyonApplication extends Application {
         }
         cmbOdaNo.setPrefWidth(150);
 
-        // --- DEĞİŞEN KISIM: TextField yerine DatePicker (Takvim Aracı) kullanıyoruz ---
+        // DatePicker
         DatePicker dpBasTarih = new DatePicker();
         dpBasTarih.setPromptText("Takvimden Seçin");
         dpBasTarih.setPrefWidth(150);
@@ -74,17 +75,16 @@ public class RezervasyonApplication extends Application {
         DatePicker dpBitTarih = new DatePicker();
         dpBitTarih.setPromptText("Takvimden Seçin");
         dpBitTarih.setPrefWidth(150);
-        // -------------------------------------------------------------------------------
 
         grid.add(new Label("TC Kimlik No:"), 0, 0); grid.add(txtTc, 1, 0);
         grid.add(new Label("Ad Soyad:"), 0, 1); grid.add(txtAd, 1, 1);
         grid.add(new Label("Oda No:"), 0, 2); grid.add(cmbOdaNo, 1, 2);
-        grid.add(new Label("Giriş Tarihi:"), 0, 3); grid.add(dpBasTarih, 1, 3); // dpBasTarih eklendi
-        grid.add(new Label("Çıkış Tarihi:"), 0, 4); grid.add(dpBitTarih, 1, 4); // dpBitTarih eklendi
+        grid.add(new Label("Giriş Tarihi:"), 0, 3); grid.add(dpBasTarih, 1, 3);
+        grid.add(new Label("Çıkış Tarihi:"), 0, 4); grid.add(dpBitTarih, 1, 4);
 
         Button btnKaydet = new Button("Rezervasyon Yap");
         Label lblSonuc = new Label();
-        lblSonuc.setStyle("-fx-text-fill: blue;");
+        lblSonuc.setStyle("-fx-text-fill: red;");
 
         btnKaydet.setOnAction(e -> {
             String secilenOda = cmbOdaNo.getValue(); 
@@ -100,14 +100,14 @@ public class RezervasyonApplication extends Application {
                 return;
             }
 
-            // DatePicker'dan gelen tarihleri toString() ile YYYY-MM-DD formatına çevirip metoda yolluyoruz
+            // Formda doldurulan bilgileri OtelYonetimi'ne gönderiyoruz
             String sonuc = sistem.musteriKayitVeRezervasyon(
                     txtTc.getText(), txtAd.getText(), secilenOda,
                     dpBasTarih.getValue().toString(), dpBitTarih.getValue().toString()
             );
             lblSonuc.setText(sonuc);
             
-            // İşlem bitince kutuları sıfırla
+            // İşlem bitince sıfırla
             txtTc.clear(); 
             txtAd.clear(); 
             cmbOdaNo.getSelectionModel().clearSelection(); 
@@ -120,6 +120,7 @@ public class RezervasyonApplication extends Application {
         return vbox;
     }
 
+    // Çıkış formu
     private VBox createCikisFormu() {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(20));
@@ -161,6 +162,7 @@ public class RezervasyonApplication extends Application {
         return vbox;
     }
 
+    // Rapor formu
     private VBox createRaporEkrani() {
         VBox vbox = new VBox(10);
         vbox.setPadding(new Insets(20));
