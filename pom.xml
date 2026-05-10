@@ -23,17 +23,17 @@
         </dependency>
 
         <!-- JavaFX Kütüphaneleri -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-    </dependencies>
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-controls</artifactId>
+                <version>17.0.6</version> <!-- Java sürümünüze uygun olanı seçin -->
+            </dependency>
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-fxml</artifactId>
+                <version>17.0.6</version>
+            </dependency>
+        </dependencies>
 
     <!-- Hatanın çözümü olan eklenti (Plugin) kısmı burası: -->
     <build>
