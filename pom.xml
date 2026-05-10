@@ -11,14 +11,42 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <javafx.version>17.0.6</javafx.version>
     </properties>
 
     <dependencies>
+        <!-- JSON İşlemleri için Gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-    </dependencies>
 
+        <!-- JavaFX Kütüphaneleri -->
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-controls</artifactId>
+                <version>17.0.6</version> <!-- Java sürümünüze uygun olanı seçin -->
+            </dependency>
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-fxml</artifactId>
+                <version>17.0.6</version>
+            </dependency>
+        </dependencies>
+
+    <!-- Hatanın çözümü olan eklenti (Plugin) kısmı burası: -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <!-- Arayüzün başlatılacağı ana sınıf (Main Class) -->
+                    <mainClass>application.RezervasyonApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

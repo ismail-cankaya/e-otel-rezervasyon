@@ -28,25 +28,26 @@ import model.Oda;
 import model.Rezervasyon;
 
 public class OtelYonetimi {
+    // Verileri hafızada tutacak yapılar
     private Map<String, Musteri> musteriler = new HashMap<>();
     private Map<String, Oda> odalar = new HashMap<>();
-    private BeklemeListesi beklemeListesi = new BeklemeListesi();
+    private BeklemeListesi beklemeListesi = new BeklemeListesi(); // FIFO bekleme listesi - Kendi yazdığımız sınıf
     private TreeMap<LocalDate, Rezervasyon> tamamlananRezervasyonlar = new TreeMap<>();
 
     private final String DOSYA_ADI = "otel_verileri.json";
     private final Gson gson;
 
-    // Java objesini JSON'a ve JSON'u Java objesine dönüştürmek için Gson kütüphanesi
+    // Consructor kullanarak Gson'u LocalDate desteğiyle yapılandırıyoruz ve varsa mevcut verileri yüklüyoruz
     public OtelYonetimi() {
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
                 .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>) (json, typeOfT, context) -> LocalDate.parse(json.getAsString()))
                 .setPrettyPrinting()
                 .create();
-
         upload();
     }
-    // Verileri JSON formatında kaydeder
+
+    // Verileri JSON formatında dosyaya kaydeder
     private void save() {
         try (Writer writer = Files.newBufferedWriter(Paths.get(DOSYA_ADI))) {
             Map<String, Object> tumVeri = new HashMap<>();
@@ -56,24 +57,25 @@ public class OtelYonetimi {
             tumVeri.put("arsiv", tamamlananRezervasyonlar);
             gson.toJson(tumVeri, writer);
         } catch (IOException e) {
-            System.out.println("Hata! Verileriniz kaydedilemedi " + e.getMessage());
+            System.out.println("Kayıt Hatası: " + e.getMessage());
         }
     }
 
-    // Önceki verileri okur, eğer veri yoksa dosya oluşturur ve odaları ekler
+    // Dosyadan JSON formatında verileri okuyarak hafızaya yükler
     private void upload() {
         File dosya = new File(DOSYA_ADI);
-        // Dosya kontrolü
         if (!dosya.exists()) {
-            System.out.println("Kayıtlı veri bulunamadı. 1-100 arası odalar oluşturuldu.");
             odaEkle();
             save();
             return;
         }
 
+        // dosya okuma işlemleri
         try (Reader reader = Files.newBufferedReader(Paths.get(DOSYA_ADI))) {
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
-
+            
+            //Json'dan gelen verileri uygun türlere dönüştürerek hafızaya yüklüyoruz
+            //TypeToken kullanarak verilerin türünü belirtiyoruz çünkü Gson, generic türleri doğrudan tanımlamakta zorlanır
             Type musterilerType = new TypeToken<Map<String, Musteri>>(){}.getType();
             musteriler = gson.fromJson(jsonObject.get("musteriler"), musterilerType);
 
@@ -82,19 +84,19 @@ public class OtelYonetimi {
 
             Type arsivType = new TypeToken<TreeMap<LocalDate, Rezervasyon>>(){}.getType();
             tamamlananRezervasyonlar = gson.fromJson(jsonObject.get("arsiv"), arsivType);
-
+            
             if (musteriler == null) musteriler = new HashMap<>();
             if (odalar == null) odalar = new HashMap<>();
             if (tamamlananRezervasyonlar == null) tamamlananRezervasyonlar = new TreeMap<>();
 
-            System.out.println("Sistem: Veriler dosyadan yüklendi. Oda sayısı: " + odalar.size());
         } catch (Exception e) {
-            System.out.println("Veri yüklenirken hata oluştu, odalar yeniden oluşturuluyor.");
             odaEkle();
         }
     }
 
-    public void musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih) {
+    // Müşteri kaydı ve rezervasyon işlemini tek bir metotta birleştiriyoruz. Bu metot, formdan gelen bilgileri alır, doğrular ve rezervasyon yapmaya çalışır.
+    // JavaFX'ten String döndürüyoruz çünkü kullanıcıya geri bildirim vermemiz gerekiyor
+    public String musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih) {
         try {
             LocalDate baslangic = LocalDate.parse(basTarih);
             LocalDate bitis = LocalDate.parse(bitTarih);
@@ -104,33 +106,30 @@ public class OtelYonetimi {
 
             Oda talepEdilenOda = odalar.get(odaNo);
             if (talepEdilenOda == null) {
-                System.out.println("Hata: " + odaNo + " numaralı bir oda sistemde bulunmuyor!");
-                return;
+                return "Hata: " + odaNo + " numaralı bir oda sistemde bulunmuyor!";
             }
 
             if (talepEdilenOda.musaitMi(baslangic, bitis)) {
                 Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.odaNo, baslangic, bitis);
                 talepEdilenOda.aktifRezervasyonlar.add(yeniRezervasyon);
-                System.out.println("Başarılı: " + odaNo + " numaralı odaya rezervasyon yapıldı.");
                 save();
+                return "Başarılı: " + odaNo + " numaralı odaya rezervasyon yapıldı.";
             } else {
-                System.out.println("Uyarı: Oda dolu! Müşteri bekleme listesine alınıyor.");
                 beklemeListesi.kuyrugaEkle(musteri);
                 save();
+                return "Uyarı: Oda dolu! Müşteri bekleme listesine eklendi.";
             }
         } catch (DateTimeParseException e) {
-            System.out.println("Hata: Lütfen tarihleri YYYY-MM-DD formatında giriniz.");
+            return "Hata: Lütfen tarihleri YYYY-MM-DD formatında giriniz.";
         } catch (Exception e) {
-            System.out.println("Hata: " + e.getMessage());
+            return "Hata: Beklenmeyen bir durum oluştu.";
         }
     }
 
-    public void cikisYap(String odaNo, String tc) {
+    // JavaFX için String döndürüyoruz
+    public String cikisYap(String odaNo, String tc) {
         Oda oda = odalar.get(odaNo);
-        if (oda == null) {
-            System.out.println("Hata: '" + odaNo + "' numaralı oda bulunamadı!");
-            return;
-        }
+        if (oda == null) return "Hata: '" + odaNo + "' numaralı oda bulunamadı!";
 
         Rezervasyon iptalEdilecek = null;
         for (Rezervasyon rez : oda.aktifRezervasyonlar) {
@@ -143,34 +142,30 @@ public class OtelYonetimi {
         if (iptalEdilecek != null) {
             oda.aktifRezervasyonlar.remove(iptalEdilecek);
             tamamlananRezervasyonlar.put(iptalEdilecek.bitisTarihi, iptalEdilecek);
-            System.out.println("Çıkış başarılı. Kayıt arşive aktarıldı.");
             save();
+            return "Çıkış başarılı. Kayıt arşive (BST) aktarıldı.";
         } else {
-            System.out.println("Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.");
+            return "Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.";
         }
     }
 
-    // --- SİLİNEN METODLARI GERİ EKLEDİK ---
-
-    public void beklemeListesiniGoster() {
-        System.out.println("\n--- Bekleme Listesi ---");
+    public String beklemeListesiniGoster() {
         if (beklemeListesi != null) {
-            beklemeListesi.listeyiYazdir();
+            return beklemeListesi.listeyiYazdir();
         }
+        return "Liste boş.";
     }
 
-    public void gecmisRezervasyonlariGoster() {
-        System.out.println("\n--- Geçmiş Rezervasyonlar (Arşiv) ---");
+    public String gecmisRezervasyonlariGoster() {
         if (tamamlananRezervasyonlar == null || tamamlananRezervasyonlar.isEmpty()) {
-            System.out.println("Arşivde hiç kayıt yok.");
-            return;
+            return "Arşivde hiç kayıt yok.";
         }
+        StringBuilder sb = new StringBuilder();
         for (Map.Entry<LocalDate, Rezervasyon> entry : tamamlananRezervasyonlar.entrySet()) {
-            System.out.println("Çıkış Tarihi: " + entry.getKey() + " | Detay: " + entry.getValue());
+            sb.append("Çıkış Tarihi: ").append(entry.getKey()).append(" | Detay: ").append(entry.getValue()).append("\n");
         }
+        return sb.toString();
     }
-
-    // --------------------------------------
 
     private void odaEkle() {
         for (int i = 1; i <= 100; i++) {

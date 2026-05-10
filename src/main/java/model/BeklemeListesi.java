@@ -16,20 +16,21 @@ public class BeklemeListesi implements Serializable {
             son.sonraki = yeniDugum;
             son = yeniDugum;
         }
-        System.out.println("-> " + musteri.adSoyad + " bekleme listesine (kuyruğa) eklendi.");
     }
 
-    public void listeyiYazdir() {
+    // Konsola değil, arayüze (GUI) metin döndürmek için String yaptık.
+    public String listeyiYazdir() {
         if (bas == null) {
-            System.out.println("Bekleme listesi boş.");
-            return;
+            return "Bekleme listesi boş.";
         }
+        StringBuilder sb = new StringBuilder();
         BeklemeDugumu gecici = bas;
         int sira = 1;
         while (gecici != null) {
-            System.out.println(sira + ". Sırada bekleyen: " + gecici.musteri.adSoyad);
+            sb.append(sira).append(". Sırada bekleyen: ").append(gecici.musteri.adSoyad).append("\n");
             gecici = gecici.sonraki;
             sira++;
         }
+        return sb.toString();
     }
 }
