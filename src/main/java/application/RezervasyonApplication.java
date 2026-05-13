@@ -17,7 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import service.OtelYonetimi;
+import service.MerkeziSistem; // YENİ EKLENDİ
 
 /**
  * E-Otel Yönetim Sistemi Ana Arayüz (GUI) Sınıfı
@@ -26,24 +26,40 @@ import service.OtelYonetimi;
  * 2. Format Kontrolü: TC Kimlik alanına harf girilmesi durumu try-catch (NumberFormatException) ile yakalanmış
  * ve 11 hane kuralı eklenmiştir.
  * 3. Eksik Veri: Oda veya tarih seçilmeden işlem yapılması engellenmiştir.
- * * --- ZAMAN VE ALAN KARMAŞIKLIĞI (COMPLEXITY) ---
- * - Arayüz Yükleme: Zaman O(1), Alan O(1) (Sabit sayıda bileşen yüklenir)
- * - Tablo Görünümü Oluşturma: Zaman O(N) (N = Listede gösterilecek kayıt sayısı)
+ * * --- ÇOKLU ŞUBE MİMARİSİ (MULTI-BRANCH ARCHITECTURE) ---
+ * - MerkeziSistem üzerinden O(1) karmaşıklıkla istenilen şubenin verilerine erişilir.
  */
 public class RezervasyonApplication extends Application {
 
-    private OtelYonetimi sistem;
+    // YENİ: Artık tek bir otel değil, merkezi sistemi çağırıyoruz
+    private MerkeziSistem merkez;
+    // YENİ: Hangi şubede işlem yapıldığını global olarak tutacak ComboBox
+    private ComboBox<String> cmbAktifSube;
 
     @Override
     public void start(Stage primaryStage) {
-        sistem = new OtelYonetimi();
+        merkez = new MerkeziSistem();
 
-        primaryStage.setTitle("E-Otel Yönetim Sistemi");
+        primaryStage.setTitle("E-Otel Yönetim Sistemi - Merkezi Sistem");
 
+        // --- EN ÜST KISIM: ŞUBE SEÇİCİ ---
+        cmbAktifSube = new ComboBox<>();
+        cmbAktifSube.getItems().addAll("Istanbul", "Ankara", "Izmir");
+        cmbAktifSube.setValue("Istanbul"); // Varsayılan Şube
+        cmbAktifSube.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        Label lblSube = new Label("Aktif Şube Seçimi: ");
+        lblSube.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        HBox topBox = new HBox(10, lblSube, cmbAktifSube);
+        topBox.setAlignment(Pos.CENTER);
+        topBox.setPadding(new Insets(15));
+        topBox.setStyle("-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;");
+
+        // --- SEKMELER (TABS) ---
         TabPane tabPane = new TabPane();
         tabPane.setStyle("-fx-background-color: #f8f9fa; -fx-font-family: 'Segoe UI', sans-serif;");
 
-        // Sekmelerin oluşturulması ve arayüze eklenmesi (Zaman: O(1))
         Tab tabRezervasyon = new Tab("Yeni Rezervasyon");
         tabRezervasyon.setClosable(false);
         tabRezervasyon.setContent(createRezervasyonFormu());
@@ -58,18 +74,18 @@ public class RezervasyonApplication extends Application {
 
         tabPane.getTabs().addAll(tabRezervasyon, tabCikis, tabRaporlar);
 
-        Scene scene = new Scene(tabPane, 370, 400);
+        // Ana düzen (Kök): Üstte şube seçici, altta sekmeler
+        VBox root = new VBox(topBox, tabPane);
+        VBox.setVgrow(tabPane, Priority.ALWAYS); // TabPane alanı doldursun
+
+        Scene scene = new Scene(root, 400, 500); // Pencere boyutunu biraz büyüttük
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    /**
-     * Rezervasyon formunu oluşturur.
-     * Karmaşıklık: Zaman O(1), Alan O(1)
-     */
     private VBox createRezervasyonFormu() {
-        Label lblBaslik = new Label("Otelimize Hoş Geldiniz");
-        lblBaslik.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        Label lblBaslik = new Label("Rezervasyon İşlemleri");
+        lblBaslik.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         lblBaslik.setMaxWidth(Double.MAX_VALUE);
         lblBaslik.setAlignment(Pos.CENTER);
 
@@ -122,56 +138,46 @@ public class RezervasyonApplication extends Application {
         Label lblSonuc = new Label();
         lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
 
-        // Kaydet Butonu Tıklanma Olayı ve Hata Yönetimi (Error Handling)
         btnKaydet.setOnAction(e -> {
             String tcNo = txtTc.getText().trim();
             String adSoyad = txtAd.getText().trim();
             String secilenOda = cmbOdaNo.getValue();
 
-            // Hata Yönetimi 1: Boşluk Kontrolü
             if (tcNo.isEmpty() || adSoyad.isEmpty()) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
                 lblSonuc.setText("Hata: TC Kimlik veya Ad Soyad boş bırakılamaz!");
                 return;
             }
 
-            // Hata Yönetimi 2: Format ve Veri Tipi Kontrolü (Try-Catch)
             try {
-                Long.parseLong(tcNo); // Sayısal değer kontrolü (Harf girilirse catch'e düşer)
+                Long.parseLong(tcNo);
                 if(tcNo.length() != 11) {
-                    lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                    lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
                     lblSonuc.setText("Hata: TC Kimlik numarası 11 haneli olmalıdır!");
                     return;
                 }
             } catch (NumberFormatException ex) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
                 lblSonuc.setText("Hata: TC Kimlik sadece rakamlardan oluşmalıdır!");
                 return;
             }
 
-            // Hata Yönetimi 3: Eksik Seçim Kontrolleri
-            if (secilenOda == null) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                lblSonuc.setText("Hata: Lütfen listeden bir oda seçiniz.");
+            if (secilenOda == null || dpBasTarih.getValue() == null || dpBitTarih.getValue() == null) {
+                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
+                lblSonuc.setText("Hata: Lütfen oda ve tarih seçimlerini tamamlayınız.");
                 return;
             }
 
-            if (dpBasTarih.getValue() == null || dpBitTarih.getValue() == null) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                lblSonuc.setText("Hata: Lütfen giriş ve çıkış tarihlerini seçiniz.");
-                return;
-            }
-
-            // Validasyonlar geçildiyse arka plana veriyi gönder
-            String sonuc = sistem.musteriKayitVeRezervasyon(
+            // DÜZELTME: İşlem aktif şube üzerinden yapılıyor!
+            String aktifSube = cmbAktifSube.getValue();
+            String sonuc = merkez.subeGetir(aktifSube).musteriKayitVeRezervasyon(
                     tcNo, adSoyad, secilenOda,
                     dpBasTarih.getValue().toString(), dpBitTarih.getValue().toString()
             );
 
-            lblSonuc.setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
+            lblSonuc.setStyle("-fx-text-fill: #27ae60;");
             lblSonuc.setText(sonuc);
 
-            // Formu Temizle (Zaman: O(1))
             txtTc.clear();
             txtAd.clear();
             cmbOdaNo.getSelectionModel().clearSelection();
@@ -180,12 +186,8 @@ public class RezervasyonApplication extends Application {
         });
 
         btnIptal.setOnAction(e -> {
-            txtTc.clear();
-            txtAd.clear();
-            cmbOdaNo.getSelectionModel().clearSelection();
-            dpBasTarih.setValue(null);
-            dpBitTarih.setValue(null);
-            lblSonuc.setText("");
+            txtTc.clear(); txtAd.clear(); cmbOdaNo.getSelectionModel().clearSelection();
+            dpBasTarih.setValue(null); dpBitTarih.setValue(null); lblSonuc.setText("");
         });
 
         VBox vbox = new VBox(20, lblBaslik, grid, butonKutusu, lblSonuc);
@@ -193,10 +195,6 @@ public class RezervasyonApplication extends Application {
         return vbox;
     }
 
-    /**
-     * Çıkış (Check-Out) formunu oluşturur.
-     * Karmaşıklık: Zaman O(1), Alan O(1)
-     */
     private VBox createCikisFormu() {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 0, 20, 0));
@@ -227,39 +225,21 @@ public class RezervasyonApplication extends Application {
         Label lblSonuc = new Label();
         lblSonuc.setStyle("-fx-text-fill: #2980b9; -fx-font-weight: bold;");
 
-        // Çıkış Butonu Tıklanma Olayı ve Hata Yönetimi
         btnCikis.setOnAction(e -> {
             String secilenOda = cmbOdaNo.getValue();
             String tcNo = txtTc.getText().trim();
 
-            if (tcNo.isEmpty()) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                lblSonuc.setText("Hata: TC Kimlik boş bırakılamaz!");
+            if (tcNo.isEmpty() || secilenOda == null) {
+                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
+                lblSonuc.setText("Hata: TC ve Oda alanları boş olamaz.");
                 return;
             }
 
-            try {
-                Long.parseLong(tcNo);
-                if(tcNo.length() != 11) {
-                    lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    lblSonuc.setText("Hata: TC Kimlik numarası 11 haneli olmalıdır!");
-                    return;
-                }
-            } catch (NumberFormatException ex) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                lblSonuc.setText("Hata: TC Kimlik sadece rakamlardan oluşmalıdır!");
-                return;
-            }
+            // DÜZELTME: Çıkış işlemi de aktif şubeye bildiriliyor
+            String aktifSube = cmbAktifSube.getValue();
+            String sonuc = merkez.subeGetir(aktifSube).cikisYap(secilenOda, tcNo);
 
-            if (secilenOda == null) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                lblSonuc.setText("Hata: Lütfen listeden bir oda seçiniz.");
-                return;
-            }
-
-            // Arka plandaki silme işlemi (Bulunamayan eleman kontrolü sistem.cikisYap içinde yapılır)
-            String sonuc = sistem.cikisYap(secilenOda, tcNo);
-            lblSonuc.setStyle("-fx-text-fill: #2980b9; -fx-font-weight: bold;");
+            lblSonuc.setStyle("-fx-text-fill: #2980b9;");
             lblSonuc.setText(sonuc);
 
             cmbOdaNo.getSelectionModel().clearSelection();
@@ -271,10 +251,6 @@ public class RezervasyonApplication extends Application {
         return vbox;
     }
 
-    /**
-     * Rapor ekranını oluşturur.
-     * Karmaşıklık: Zaman O(1), Alan O(1)
-     */
     private VBox createRaporEkrani() {
         VBox vbox = new VBox(15);
         vbox.setPadding(new Insets(20));
@@ -287,6 +263,11 @@ public class RezervasyonApplication extends Application {
         btnGecmis.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
         btnGecmis.setMaxWidth(Double.MAX_VALUE);
 
+        // YENİ BUTON: Merkezi Rapor
+        Button btnMerkezRapor = new Button("Merkezi Zincir Raporu");
+        btnMerkezRapor.setStyle("-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
+        btnMerkezRapor.setMaxWidth(Double.MAX_VALUE);
+
         HBox butonKutusu = new HBox(10, btnBeklemeListesi, btnGecmis);
         HBox.setHgrow(btnBeklemeListesi, Priority.ALWAYS);
         HBox.setHgrow(btnGecmis, Priority.ALWAYS);
@@ -294,38 +275,40 @@ public class RezervasyonApplication extends Application {
 
         TextArea txtSonuc = new TextArea();
         txtSonuc.setEditable(false);
-
         txtSonuc.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-font-family: 'Monospaced'; -fx-font-size: 13px;");
         txtSonuc.setPrefHeight(250);
         VBox.setVgrow(txtSonuc, Priority.ALWAYS);
 
+        // Bekleme listesi ve Geçmiş, üstten seçili olan (aktif) şubeden çekilir
         btnBeklemeListesi.setOnAction(e -> {
-            String hamVeri = sistem.beklemeListesiniGoster();
-            txtSonuc.setText(tabloGorunumuYap(hamVeri));
+            String aktifSube = cmbAktifSube.getValue();
+            String hamVeri = merkez.subeGetir(aktifSube).beklemeListesiniGoster();
+            txtSonuc.setText("--- " + aktifSube + " Şubesi Bekleme Listesi ---\n\n" + tabloGorunumuYap(hamVeri));
         });
 
         btnGecmis.setOnAction(e -> {
-            String hamVeri = sistem.gecmisRezervasyonlariGoster();
-            txtSonuc.setText(tabloGorunumuYap(hamVeri));
+            String aktifSube = cmbAktifSube.getValue();
+            String hamVeri = merkez.subeGetir(aktifSube).gecmisRezervasyonlariGoster();
+            txtSonuc.setText("--- " + aktifSube + " Şubesi Arşivi ---\n\n" + tabloGorunumuYap(hamVeri));
         });
 
-        vbox.getChildren().addAll(butonKutusu, txtSonuc);
+        // Merkez Raporu tüm sistemi tarar, tabloGorunumuYap() metoduna girmez (kendi tasarımı var)
+        btnMerkezRapor.setOnAction(e -> {
+            String rapor = merkez.merkeziRaporOlustur();
+            txtSonuc.setText(rapor);
+        });
+
+        vbox.getChildren().addAll(butonKutusu, btnMerkezRapor, txtSonuc);
         return vbox;
     }
 
-    /**
-     * Veritabanı/Listelerden gelen string veriyi arayüzde düzenli göstermek için formatlar.
-     * Zaman Karmaşıklığı: O(N) (N = Gönderilen metindeki satır sayısı)
-     * Alan Karmaşıklığı: O(N) (N = Yeni oluşturulan tablo stringinin boyutu)
-     */
     private String tabloGorunumuYap(String veri) {
-        // Hata Yönetimi: Boş liste veya null kontrolü
         if (veri == null || veri.trim().isEmpty()) {
             return "Görüntülenecek kayıt bulunamadı.";
         }
 
         StringBuilder tablo = new StringBuilder();
-        String[] satirlar = veri.split("\n"); // O(N) Zaman ve Alan
+        String[] satirlar = veri.split("\n");
 
         for (String satir : satirlar) {
             if (satir.trim().isEmpty()) continue;

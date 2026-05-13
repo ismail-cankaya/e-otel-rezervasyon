@@ -31,14 +31,16 @@ public class OtelYonetimi {
     // Verileri hafızada tutacak yapılar
     private Map<String, Musteri> musteriler = new HashMap<>();
     private Map<String, Oda> odalar = new HashMap<>();
-    private BeklemeListesi beklemeListesi = new BeklemeListesi(); // FIFO bekleme listesi - Kendi yazdığımız sınıf
+    private BeklemeListesi beklemeListesi = new BeklemeListesi();
     private TreeMap<LocalDate, Rezervasyon> tamamlananRezervasyonlar = new TreeMap<>();
 
-    private final String DOSYA_ADI = "otel_verileri.json";
+    // DÜZELTME: Dosya adı artık sabit değil, her şube için dışarıdan gelecek
+    private final String DOSYA_ADI;
     private final Gson gson;
 
-    // Consructor kullanarak Gson'u LocalDate desteğiyle yapılandırıyoruz ve varsa mevcut verileri yüklüyoruz
-    public OtelYonetimi() {
+    // DÜZELTME: Constructor artık dosya adını parametre olarak alıyor
+    public OtelYonetimi(String dosyaAdi) {
+        this.DOSYA_ADI = dosyaAdi;
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
                 .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>) (json, typeOfT, context) -> LocalDate.parse(json.getAsString()))
@@ -47,7 +49,6 @@ public class OtelYonetimi {
         upload();
     }
 
-    // Verileri JSON formatında dosyaya kaydeder
     private void save() {
         try (Writer writer = Files.newBufferedWriter(Paths.get(DOSYA_ADI))) {
             Map<String, Object> tumVeri = new HashMap<>();
@@ -61,7 +62,6 @@ public class OtelYonetimi {
         }
     }
 
-    // Dosyadan JSON formatında verileri okuyarak hafızaya yükler
     private void upload() {
         File dosya = new File(DOSYA_ADI);
         if (!dosya.exists()) {
@@ -70,12 +70,9 @@ public class OtelYonetimi {
             return;
         }
 
-        // dosya okuma işlemleri
         try (Reader reader = Files.newBufferedReader(Paths.get(DOSYA_ADI))) {
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
-            
-            //Json'dan gelen verileri uygun türlere dönüştürerek hafızaya yüklüyoruz
-            //TypeToken kullanarak verilerin türünü belirtiyoruz çünkü Gson, generic türleri doğrudan tanımlamakta zorlanır
+
             Type musterilerType = new TypeToken<Map<String, Musteri>>(){}.getType();
             musteriler = gson.fromJson(jsonObject.get("musteriler"), musterilerType);
 
@@ -84,7 +81,7 @@ public class OtelYonetimi {
 
             Type arsivType = new TypeToken<TreeMap<LocalDate, Rezervasyon>>(){}.getType();
             tamamlananRezervasyonlar = gson.fromJson(jsonObject.get("arsiv"), arsivType);
-            
+
             if (musteriler == null) musteriler = new HashMap<>();
             if (odalar == null) odalar = new HashMap<>();
             if (tamamlananRezervasyonlar == null) tamamlananRezervasyonlar = new TreeMap<>();
@@ -94,8 +91,6 @@ public class OtelYonetimi {
         }
     }
 
-    // Müşteri kaydı ve rezervasyon işlemini tek bir metotta birleştiriyoruz. Bu metot, formdan gelen bilgileri alır, doğrular ve rezervasyon yapmaya çalışır.
-    // JavaFX'ten String döndürüyoruz çünkü kullanıcıya geri bildirim vermemiz gerekiyor
     public String musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih) {
         try {
             LocalDate baslangic = LocalDate.parse(basTarih);
@@ -111,7 +106,11 @@ public class OtelYonetimi {
 
             if (talepEdilenOda.musaitMi(baslangic, bitis)) {
                 Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.odaNo, baslangic, bitis);
+
+                // Eğer önceki adımlarda Aralık Ağacı (Interval Tree) için "rezervasyonEkle"
+                // metodunu yazdıysan burayı talepEdilenOda.rezervasyonEkle(yeniRezervasyon); yapabilirsin.
                 talepEdilenOda.aktifRezervasyonlar.add(yeniRezervasyon);
+
                 save();
                 return "Başarılı: " + odaNo + " numaralı odaya rezervasyon yapıldı.";
             } else {
@@ -126,7 +125,6 @@ public class OtelYonetimi {
         }
     }
 
-    // JavaFX için String döndürüyoruz
     public String cikisYap(String odaNo, String tc) {
         Oda oda = odalar.get(odaNo);
         if (oda == null) return "Hata: '" + odaNo + "' numaralı oda bulunamadı!";
@@ -140,7 +138,7 @@ public class OtelYonetimi {
         }
 
         if (iptalEdilecek != null) {
-            oda.aktifRezervasyonlar.remove(iptalEdilecek);
+            oda.aktifRezervasyonlar.remove(iptalEdilecek); // Ağaç kullanıyorsan oda.rezervasyonSil(iptalEdilecek); yap
             tamamlananRezervasyonlar.put(iptalEdilecek.bitisTarihi, iptalEdilecek);
             save();
             return "Çıkış başarılı. Kayıt arşive (BST) aktarıldı.";
@@ -173,5 +171,15 @@ public class OtelYonetimi {
             int kapasite = (i % 5 == 0) ? 4 : (i % 2 == 0 ? 3 : 2);
             odalar.put(odaNo, new Oda(odaNo, kapasite));
         }
+    }
+
+    // --- MERKEZİ SİSTEM İÇİN EKLENEN YENİ METOTLAR ---
+
+    public int getAktifMusteriSayisi() {
+        return musteriler.size(); // Sisteme kayıtlı toplam müşteri sayısını verir
+    }
+
+    public int getTamamlananRezervasyonSayisi() {
+        return tamamlananRezervasyonlar.size(); // Arşiv boyutunu verir
     }
 }
