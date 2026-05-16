@@ -11,6 +11,9 @@ public class Oda implements Serializable {
     public String odaNo;
     public int kapasite;
 
+    // --- YENİ EKLENEN: O anki doluluğu takip etmek için ---
+    private int mevcutKisiSayisi;
+
     // Geçmişi ve TC'leri kolay listelemek için klasik listemiz
     public List<Rezervasyon> aktifRezervasyonlar;
 
@@ -20,11 +23,31 @@ public class Oda implements Serializable {
     public Oda(String odaNo, int kapasite) {
         this.odaNo = odaNo;
         this.kapasite = kapasite;
+        this.mevcutKisiSayisi = 0; // Başlangıçta 0 kişi
         this.aktifRezervasyonlar = new ArrayList<>();
         this.agac = new AralikAgaci();
     }
 
-    // --- YENİ EKLENEN METOTLAR ---
+    // --- YENİ EKLENEN: GETTER VE SETTER METOTLARI ---
+
+    public int getKapasite() {
+        return this.kapasite;
+    }
+
+    public int getMevcutKisiSayisi() {
+        return this.mevcutKisiSayisi;
+    }
+
+    public void kisiEkle() {
+        this.mevcutKisiSayisi++;
+    }
+
+    public void kisiCikar() {
+        if (this.mevcutKisiSayisi > 0) {
+            this.mevcutKisiSayisi--;
+        }
+    }
+    // ------------------------------------------------
 
     // Müşteri geldiğinde hem listeye hem de Çakışma Ağacına (Interval Tree) eklenir
     public void rezervasyonEkle(Rezervasyon rez) {

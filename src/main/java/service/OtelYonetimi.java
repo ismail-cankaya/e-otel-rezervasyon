@@ -34,11 +34,9 @@ public class OtelYonetimi {
     private BeklemeListesi beklemeListesi = new BeklemeListesi();
     private TreeMap<LocalDate, Rezervasyon> tamamlananRezervasyonlar = new TreeMap<>();
 
-    // DÜZELTME: Dosya adı artık sabit değil, her şube için dışarıdan gelecek
     private final String DOSYA_ADI;
     private final Gson gson;
 
-    // DÜZELTME: Constructor artık dosya adını parametre olarak alıyor
     public OtelYonetimi(String dosyaAdi) {
         this.DOSYA_ADI = dosyaAdi;
         this.gson = new GsonBuilder()
@@ -104,19 +102,25 @@ public class OtelYonetimi {
                 return "Hata: " + odaNo + " numaralı bir oda sistemde bulunmuyor!";
             }
 
+            // Odanın anlık fiziksel kapasite kontrolü
+            if (talepEdilenOda.getMevcutKisiSayisi() >= talepEdilenOda.getKapasite()) {
+                return "Uyarı: " + odaNo + " numaralı oda kapasitesi (" + talepEdilenOda.getKapasite() + " kişi) tamamen dolu!";
+            }
+
+            // Tarihsel çakışma (Interval Tree) kontrolü
             if (talepEdilenOda.musaitMi(baslangic, bitis)) {
                 Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.odaNo, baslangic, bitis);
 
-                // Eğer önceki adımlarda Aralık Ağacı (Interval Tree) için "rezervasyonEkle"
-                // metodunu yazdıysan burayı talepEdilenOda.rezervasyonEkle(yeniRezervasyon); yapabilirsin.
-                talepEdilenOda.aktifRezervasyonlar.add(yeniRezervasyon);
+                // Müşteriyi doğrudan Oda sınıfının metodunu kullanarak ekliyoruz (Ağaç güncelleniyor)
+                talepEdilenOda.rezervasyonEkle(yeniRezervasyon);
+                talepEdilenOda.kisiEkle();
 
                 save();
                 return "Başarılı: " + odaNo + " numaralı odaya rezervasyon yapıldı.";
             } else {
                 beklemeListesi.kuyrugaEkle(musteri);
                 save();
-                return "Uyarı: Oda dolu! Müşteri bekleme listesine eklendi.";
+                return "Uyarı: Oda belirtilen tarihlerde dolu! Müşteri bekleme listesine eklendi.";
             }
         } catch (DateTimeParseException e) {
             return "Hata: Lütfen tarihleri YYYY-MM-DD formatında giriniz.";
@@ -138,10 +142,13 @@ public class OtelYonetimi {
         }
 
         if (iptalEdilecek != null) {
-            oda.aktifRezervasyonlar.remove(iptalEdilecek); // Ağaç kullanıyorsan oda.rezervasyonSil(iptalEdilecek); yap
+            // Çıkış yaparken yine Oda sınıfının metodunu kullanıyoruz (Ağaç yeniden diziliyor)
+            oda.rezervasyonSil(iptalEdilecek);
+            oda.kisiCikar();
+
             tamamlananRezervasyonlar.put(iptalEdilecek.bitisTarihi, iptalEdilecek);
             save();
-            return "Çıkış başarılı. Kayıt arşive (BST) aktarıldı.";
+            return "Çıkış başarılı. Kayıt arşive aktarıldı.";
         } else {
             return "Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.";
         }
@@ -166,14 +173,14 @@ public class OtelYonetimi {
     }
 
     private void odaEkle() {
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 25; i++) {
             String odaNo = String.valueOf(i);
             int kapasite = (i % 5 == 0) ? 4 : (i % 2 == 0 ? 3 : 2);
             odalar.put(odaNo, new Oda(odaNo, kapasite));
         }
     }
 
-    // --- MERKEZİ SİSTEM İÇİN EKLENEN YENİ METOTLAR ---
+    // --- MERKEZİ SİSTEM İÇİN METOTLAR ---
 
     public int getAktifMusteriSayisi() {
         return musteriler.size(); // Sisteme kayıtlı toplam müşteri sayısını verir
