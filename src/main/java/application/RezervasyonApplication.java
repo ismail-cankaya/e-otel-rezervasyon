@@ -44,8 +44,8 @@ public class RezervasyonApplication extends Application {
 
         // --- EN ÜST KISIM: ŞUBE SEÇİCİ ---
         cmbAktifSube = new ComboBox<>();
-        cmbAktifSube.getItems().addAll("Istanbul", "Ankara", "Izmir");
-        cmbAktifSube.setValue("Istanbul"); // Varsayılan Şube
+        cmbAktifSube.getItems().addAll("Çorlu", "Bayburt", "Los Angeles", "Las Vegas");
+        cmbAktifSube.setValue("Çorlu"); // Varsayılan Şube
         cmbAktifSube.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
         Label lblSube = new Label("Aktif Şube Seçimi: ");

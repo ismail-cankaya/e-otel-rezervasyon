@@ -11,9 +11,10 @@ public class MerkeziSistem {
         this.subeler = new HashMap<>();
 
         // Sisteme şubeleri kendi özel JSON dosyalarıyla ekliyoruz.
-        subeler.put("Istanbul", new OtelYonetimi("istanbul_verileri.json"));
-        subeler.put("Ankara", new OtelYonetimi("ankara_verileri.json"));
-        subeler.put("Izmir", new OtelYonetimi("izmir_verileri.json"));
+        subeler.put("Bayburt", new OtelYonetimi("Bayburt.json"));
+        subeler.put("Los Angeles", new OtelYonetimi("Los Angeles.json"));
+        subeler.put("Las Vegas", new OtelYonetimi("Las Vegas.json"));
+        subeler.put("Çorlu", new OtelYonetimi("Çorlu.json"));
     }
 
     public OtelYonetimi subeGetir(String subeAdi) {
