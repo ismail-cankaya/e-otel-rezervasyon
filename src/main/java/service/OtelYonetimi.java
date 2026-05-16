@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -28,9 +28,10 @@ import model.Oda;
 import model.Rezervasyon;
 
 public class OtelYonetimi {
-    // Verileri hafızada tutacak yapılar
-    private Map<String, Musteri> musteriler = new HashMap<>();
-    private Map<String, Oda> odalar = new HashMap<>();
+
+    private Map<String, Musteri> musteriler = new LinkedHashMap<>();
+    private Map<String, Oda> odalar = new LinkedHashMap<>();
+
     private BeklemeListesi beklemeListesi = new BeklemeListesi();
     private TreeMap<LocalDate, Rezervasyon> tamamlananRezervasyonlar = new TreeMap<>();
 
@@ -49,7 +50,7 @@ public class OtelYonetimi {
 
     private void save() {
         try (Writer writer = Files.newBufferedWriter(Paths.get(DOSYA_ADI))) {
-            Map<String, Object> tumVeri = new HashMap<>();
+            Map<String, Object> tumVeri = new LinkedHashMap<>();
             tumVeri.put("musteriler", musteriler);
             tumVeri.put("odalar", odalar);
             tumVeri.put("beklemeListesi", beklemeListesi);
@@ -71,18 +72,25 @@ public class OtelYonetimi {
         try (Reader reader = Files.newBufferedReader(Paths.get(DOSYA_ADI))) {
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
 
-            Type musterilerType = new TypeToken<Map<String, Musteri>>(){}.getType();
+            Type musterilerType = new TypeToken<LinkedHashMap<String, Musteri>>(){}.getType();
             musteriler = gson.fromJson(jsonObject.get("musteriler"), musterilerType);
 
-            Type odalarType = new TypeToken<Map<String, Oda>>(){}.getType();
+            Type odalarType = new TypeToken<LinkedHashMap<String, Oda>>(){}.getType();
             odalar = gson.fromJson(jsonObject.get("odalar"), odalarType);
 
             Type arsivType = new TypeToken<TreeMap<LocalDate, Rezervasyon>>(){}.getType();
             tamamlananRezervasyonlar = gson.fromJson(jsonObject.get("arsiv"), arsivType);
 
-            if (musteriler == null) musteriler = new HashMap<>();
-            if (odalar == null) odalar = new HashMap<>();
+            if (musteriler == null) musteriler = new LinkedHashMap<>();
             if (tamamlananRezervasyonlar == null) tamamlananRezervasyonlar = new TreeMap<>();
+
+            if (odalar == null) {
+                odalar = new LinkedHashMap<>();
+            } else {
+                for (Oda oda : odalar.values()) {
+                    oda.agaciYenidenOlustur();
+                }
+            }
 
         } catch (Exception e) {
             odaEkle();
@@ -102,25 +110,17 @@ public class OtelYonetimi {
                 return "Hata: " + odaNo + " numaralı bir oda sistemde bulunmuyor!";
             }
 
-            // Odanın anlık fiziksel kapasite kontrolü
-            if (talepEdilenOda.getMevcutKisiSayisi() >= talepEdilenOda.getKapasite()) {
-                return "Uyarı: " + odaNo + " numaralı oda kapasitesi (" + talepEdilenOda.getKapasite() + " kişi) tamamen dolu!";
-            }
-
-            // Tarihsel çakışma (Interval Tree) kontrolü
+            // Kapasite kontrolü artık tamamen ağaçtaki tarihlere bakarak (musaitMi) yapılıyor
             if (talepEdilenOda.musaitMi(baslangic, bitis)) {
                 Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.odaNo, baslangic, bitis);
 
-                // Müşteriyi doğrudan Oda sınıfının metodunu kullanarak ekliyoruz (Ağaç güncelleniyor)
                 talepEdilenOda.rezervasyonEkle(yeniRezervasyon);
-                talepEdilenOda.kisiEkle();
-
                 save();
                 return "Başarılı: " + odaNo + " numaralı odaya rezervasyon yapıldı.";
             } else {
                 beklemeListesi.kuyrugaEkle(musteri);
                 save();
-                return "Uyarı: Oda belirtilen tarihlerde dolu! Müşteri bekleme listesine eklendi.";
+                return "Uyarı: Oda belirtilen tarihlerde tam kapasite dolu! Müşteri bekleme listesine eklendi.";
             }
         } catch (DateTimeParseException e) {
             return "Hata: Lütfen tarihleri YYYY-MM-DD formatında giriniz.";
@@ -142,10 +142,7 @@ public class OtelYonetimi {
         }
 
         if (iptalEdilecek != null) {
-            // Çıkış yaparken yine Oda sınıfının metodunu kullanıyoruz (Ağaç yeniden diziliyor)
             oda.rezervasyonSil(iptalEdilecek);
-            oda.kisiCikar();
-
             tamamlananRezervasyonlar.put(iptalEdilecek.bitisTarihi, iptalEdilecek);
             save();
             return "Çıkış başarılı. Kayıt arşive aktarıldı.";
@@ -180,13 +177,11 @@ public class OtelYonetimi {
         }
     }
 
-    // --- MERKEZİ SİSTEM İÇİN METOTLAR ---
-
     public int getAktifMusteriSayisi() {
-        return musteriler.size(); // Sisteme kayıtlı toplam müşteri sayısını verir
+        return musteriler.size();
     }
 
     public int getTamamlananRezervasyonSayisi() {
-        return tamamlananRezervasyonlar.size(); // Arşiv boyutunu verir
+        return tamamlananRezervasyonlar.size();
     }
 }

@@ -11,67 +11,52 @@ public class Oda implements Serializable {
     public String odaNo;
     public int kapasite;
 
-    // --- YENİ EKLENEN: O anki doluluğu takip etmek için ---
-    private int mevcutKisiSayisi;
-
-    // Geçmişi ve TC'leri kolay listelemek için klasik listemiz
     public List<Rezervasyon> aktifRezervasyonlar;
 
-    // HOCANIN İSTEDİĞİ: Çakışma kontrolünü çok hızlı yapacak Aralık Ağacı
-    private AralikAgaci agac;
+    // JSON'da görünmemesi için transient kalmaya devam ediyor
+    private transient AralikAgaci agac;
 
     public Oda(String odaNo, int kapasite) {
         this.odaNo = odaNo;
         this.kapasite = kapasite;
-        this.mevcutKisiSayisi = 0; // Başlangıçta 0 kişi
         this.aktifRezervasyonlar = new ArrayList<>();
         this.agac = new AralikAgaci();
     }
 
-    // --- YENİ EKLENEN: GETTER VE SETTER METOTLARI ---
+    public void agaciYenidenOlustur() {
+        this.agac = new AralikAgaci();
+        if (this.aktifRezervasyonlar != null) {
+            for (Rezervasyon r : this.aktifRezervasyonlar) {
+                this.agac.ekle(r);
+            }
+        }
+    }
 
     public int getKapasite() {
         return this.kapasite;
     }
 
-    public int getMevcutKisiSayisi() {
-        return this.mevcutKisiSayisi;
-    }
-
-    public void kisiEkle() {
-        this.mevcutKisiSayisi++;
-    }
-
-    public void kisiCikar() {
-        if (this.mevcutKisiSayisi > 0) {
-            this.mevcutKisiSayisi--;
-        }
-    }
-    // ------------------------------------------------
-
-    // Müşteri geldiğinde hem listeye hem de Çakışma Ağacına (Interval Tree) eklenir
     public void rezervasyonEkle(Rezervasyon rez) {
         aktifRezervasyonlar.add(rez);
         agac.ekle(rez);
     }
 
-    // Müşteri çıkış yaptığında listeden silinir, ağaç güncellenir
     public void rezervasyonSil(Rezervasyon rez) {
         aktifRezervasyonlar.remove(rez);
-        agac = new AralikAgaci(); // Ağacı sıfırla
+        agac = new AralikAgaci();
         for (Rezervasyon r : aktifRezervasyonlar) {
-            agac.ekle(r); // Kalanları ağaca geri diz
+            agac.ekle(r);
         }
     }
 
-    // ÇAKIŞMA KONTROLÜ: Artık for döngüsüyle değil, Aralık Ağacı ile (O(log N) hızında) yapılıyor!
+    // --- YENİ AKILLI KAPASİTE KONTROLÜ ---
     public boolean musaitMi(LocalDate baslangic, LocalDate bitis) {
-        return !agac.cakismaVarMi(baslangic, bitis);
+        // İstenen tarihlerdeki mevcut kayıtları say ve kapasite ile karşılaştır
+        int oTarihtekiKisiSayisi = agac.cakisanSayisiniBul(baslangic, bitis);
+        return oTarihtekiKisiSayisi < kapasite;
     }
 
-    // =========================================================
-    // --- INTERVAL TREE (ARALIK AĞACI) ALTYAPISI (İÇ SINIFLAR) ---
-    // =========================================================
+    // --- INTERVAL TREE (ARALIK AĞACI) ---
 
     private static class AralikAgaciDugumu implements Serializable {
         Rezervasyon rez;
@@ -106,23 +91,32 @@ public class Oda implements Serializable {
             return dugum;
         }
 
-        public boolean cakismaVarMi(LocalDate bas, LocalDate bit) {
-            return cakismaKontrolRec(kok, bas, bit);
+        // Çakışan aralıkları sayan metot
+        public int cakisanSayisiniBul(LocalDate bas, LocalDate bit) {
+            return cakisanSayisiRec(kok, bas, bit);
         }
 
-        private boolean cakismaKontrolRec(AralikAgaciDugumu dugum, LocalDate bas, LocalDate bit) {
-            if (dugum == null) return false; // Çakışma yok
+        private int cakisanSayisiRec(AralikAgaciDugumu dugum, LocalDate bas, LocalDate bit) {
+            if (dugum == null) return 0;
 
-            // Çakışma formülü: Biri bitmeden diğeri başlıyorsa çakışma vardır!
+            int cakismaSayisi = 0;
+
+            // Biri bitmeden diğeri başlıyorsa çakışma (aynı odada kalma) vardır
             if (bas.isBefore(dugum.rez.bitisTarihi) && bit.isAfter(dugum.rez.baslangicTarihi)) {
-                return true;
+                cakismaSayisi++;
             }
 
+            // Sol dalda ihtimal varsa kontrol et
             if (dugum.sol != null && dugum.sol.maxBitis.isAfter(bas)) {
-                return cakismaKontrolRec(dugum.sol, bas, bit);
+                cakismaSayisi += cakisanSayisiRec(dugum.sol, bas, bit);
             }
 
-            return cakismaKontrolRec(dugum.sag, bas, bit);
+            // Sağ dalda ihtimal varsa kontrol et
+            if (dugum.sag != null && bit.isAfter(dugum.rez.baslangicTarihi)) {
+                cakismaSayisi += cakisanSayisiRec(dugum.sag, bas, bit);
+            }
+
+            return cakismaSayisi;
         }
     }
 }
