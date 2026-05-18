@@ -112,7 +112,8 @@ public class OtelYonetimi {
 
             // Kapasite kontrolü artık tamamen ağaçtaki tarihlere bakarak (musaitMi) yapılıyor
             if (talepEdilenOda.musaitMi(baslangic, bitis)) {
-                Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.odaNo, baslangic, bitis);
+                // DÜZELTME 1: talepEdilenOda.odaNo yerine .getOdaNo() kullanıldı
+                Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.getOdaNo(), baslangic, bitis);
 
                 talepEdilenOda.rezervasyonEkle(yeniRezervasyon);
                 save();
@@ -134,8 +135,10 @@ public class OtelYonetimi {
         if (oda == null) return "Hata: '" + odaNo + "' numaralı oda bulunamadı!";
 
         Rezervasyon iptalEdilecek = null;
-        for (Rezervasyon rez : oda.aktifRezervasyonlar) {
-            if (rez.musteri.tcNo.equals(tc)) {
+        // DÜZELTME 2: oda.aktifRezervasyonlar yerine .getAktifRezervasyonlar() kullanıldı
+        for (Rezervasyon rez : oda.getAktifRezervasyonlar()) {
+            // DÜZELTME 3: rez.musteri.tcNo yerine .getMusteri().getTcNo() kullanıldı
+            if (rez.getMusteri().getTcNo().equals(tc)) {
                 iptalEdilecek = rez;
                 break;
             }
@@ -143,7 +146,8 @@ public class OtelYonetimi {
 
         if (iptalEdilecek != null) {
             oda.rezervasyonSil(iptalEdilecek);
-            tamamlananRezervasyonlar.put(iptalEdilecek.bitisTarihi, iptalEdilecek);
+            // DÜZELTME 4: iptalEdilecek.bitisTarihi yerine .getBitisTarihi() kullanıldı
+            tamamlananRezervasyonlar.put(iptalEdilecek.getBitisTarihi(), iptalEdilecek);
             save();
             return "Çıkış başarılı. Kayıt arşive aktarıldı.";
         } else {

@@ -18,7 +18,10 @@ public class MerkeziSistem {
     }
 
     public OtelYonetimi subeGetir(String subeAdi) {
-        return subeler.get(subeAdi);
+        if (subeAdi == null) {
+            return null;
+        }
+        return subeler.get(subeAdi.trim());
     }
 
     // --- HATAYI ÇÖZEN KISIM BURASI ---

@@ -61,11 +61,11 @@ public class RezervasyonConsole {
                     cikis();
                     break;
                 default:
-                    System.out.println("\n❌ Geçersiz seçim! Lütfen 0-5 arasında bir sayı girin.");
+                    System.out.println("\n Geçersiz seçim! Lütfen 0-5 arasında bir sayı girin.");
                     bekle();
             }
         } catch (Exception e) {
-            System.out.println("\n❌ Hata: " + e.getMessage());
+            System.out.println("\n Hata: " + e.getMessage());
             bekle();
         }
     }
@@ -82,7 +82,7 @@ public class RezervasyonConsole {
     private void subeMenusu(String subeAdi) {
         OtelYonetimi sube = merkeziSistem.subeGetir(subeAdi);
         if (sube == null) {
-            System.out.println("❌ Şube bulunamadı!");
+            System.out.println(" Şube bulunamadı!");
             bekle();
             return;
         }
@@ -125,11 +125,11 @@ public class RezervasyonConsole {
                         cikis();
                         break;
                     default:
-                        System.out.println("\n❌ Geçersiz seçim! Lütfen 1-6 arasında bir sayı girin.");
+                        System.out.println("\n Geçersiz seçim! Lütfen 1-6 arasında bir sayı girin.");
                         bekle();
                 }
             } catch (Exception e) {
-                System.out.println("\n❌ Hata: " + e.getMessage());
+                System.out.println("\n Hata: " + e.getMessage());
                 bekle();
             }
         }
@@ -151,7 +151,7 @@ public class RezervasyonConsole {
             System.out.print("👤 Ad Soyad: ");
             String ad = scanner.nextLine().trim();
             if (ad.isEmpty()) {
-                System.out.println("\n❌ Ad soyad boş olamaz!");
+                System.out.println("\n Ad soyad boş olamaz!");
                 bekle();
                 return;
             }
@@ -160,7 +160,7 @@ public class RezervasyonConsole {
             System.out.print("🚪 Oda Numarası (1-25): ");
             String odaNo = scanner.nextLine().trim();
             if (!odaNo.matches("^\\d+$") || Integer.parseInt(odaNo) < 1 || Integer.parseInt(odaNo) > 25) {
-                System.out.println("\n❌ Oda numarası 1 ile 25 arasında olmalıdır!");
+                System.out.println("\n Oda numarası 1 ile 25 arasında olmalıdır!");
                 bekle();
                 return;
             }
@@ -175,7 +175,7 @@ public class RezervasyonConsole {
 
             // Tarih kontrolü
             if (!bitTarih.isAfter(basTarih)) {
-                System.out.println("\n❌ Bitiş tarihi, başlangıç tarihinden sonra olmalıdır!");
+                System.out.println("\n Bitiş tarihi, başlangıç tarihinden sonra olmalıdır!");
                 bekle();
                 return;
             }
@@ -189,7 +189,7 @@ public class RezervasyonConsole {
             bekle();
 
         } catch (Exception e) {
-            System.out.println("\n❌ Hata: " + e.getMessage());
+            System.out.println("\n Hata: " + e.getMessage());
             bekle();
         }
     }
@@ -205,7 +205,7 @@ public class RezervasyonConsole {
             System.out.print("🚪 Oda Numarası (1-25): ");
             String odaNo = scanner.nextLine().trim();
             if (!odaNo.matches("^\\d+$") || Integer.parseInt(odaNo) < 1 || Integer.parseInt(odaNo) > 25) {
-                System.out.println("\n❌ Oda numarası 1 ile 25 arasında olmalıdır!");
+                System.out.println("\n Oda numarası 1 ile 25 arasında olmalıdır!");
                 bekle();
                 return;
             }
@@ -221,7 +221,7 @@ public class RezervasyonConsole {
             bekle();
 
         } catch (Exception e) {
-            System.out.println("\n❌ Hata: " + e.getMessage());
+            System.out.println("\n Hata: " + e.getMessage());
             bekle();
         }
     }
@@ -256,12 +256,12 @@ public class RezervasyonConsole {
             String tc = scanner.nextLine().trim();
 
             if (tc.isEmpty()) {
-                System.out.println("❌ TC numarası boş olamaz!");
+                System.out.println(" TC numarası boş olamaz!");
                 continue;
             }
 
             if (!tc.matches("^\\d{11}$")) {
-                System.out.println("❌ TC numarası 11 haneli ve yalnızca rakamlardan oluşmalıdır!");
+                System.out.println(" TC numarası 11 haneli ve yalnızca rakamlardan oluşmalıdır!");
                 continue;
             }
 
@@ -277,12 +277,12 @@ public class RezervasyonConsole {
             try {
                 LocalDate tarih = LocalDate.parse(tarihStr);
                 if (tarih.isBefore(LocalDate.now())) {
-                    System.out.println("❌ Geçmiş tarih seçemezsiniz!");
+                    System.out.println(" Geçmiş tarih seçemezsiniz!");
                     continue;
                 }
                 return tarih;
             } catch (DateTimeParseException e) {
-                System.out.println("❌ Geçersiz tarih formatı! Lütfen YYYY-MM-DD formatında girin (örn: 2026-05-20)");
+                System.out.println(" Geçersiz tarih formatı! Lütfen YYYY-MM-DD formatında girin (örn: 2026-05-20)");
                 continue;
             }
         }
@@ -291,7 +291,7 @@ public class RezervasyonConsole {
     private void cikis() {
         temizleEkran();
         ayrilim();
-        System.out.println("        HOŞÇA KALIN 👋");
+        System.out.println("        HOŞÇA KALIN ");
         ayrilim();
         System.out.println();
         scanner.close();

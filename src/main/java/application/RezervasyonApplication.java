@@ -205,7 +205,7 @@ public class RezervasyonApplication extends Application {
         cmbOdaNo.setPromptText("Oda Seçiniz");
         cmbOdaNo.setStyle("-fx-background-radius: 5;");
         cmbOdaNo.setPrefWidth(210);
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 25; i++) {
             cmbOdaNo.getItems().add(String.valueOf(i));
         }
 
