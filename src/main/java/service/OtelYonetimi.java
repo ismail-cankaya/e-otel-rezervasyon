@@ -12,9 +12,11 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.HashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -36,7 +38,8 @@ public class OtelYonetimi {
     private Map<String, Oda> odalar = new LinkedHashMap<>();
 
     private BeklemeListesi beklemeListesi = new BeklemeListesi();
-    private TreeMap<LocalDate, Rezervasyon> tamamlananRezervasyonlar = new TreeMap<>();
+    // AÇIK KAPATILDI: Arşiv artık silinmemesi için List (Liste) yapısına geçirildi
+    private List<Rezervasyon> tamamlananRezervasyonlar = new ArrayList<>();
 
     private final String DOSYA_ADI;
     private final Gson gson;
@@ -81,11 +84,12 @@ public class OtelYonetimi {
             Type odalarType = new TypeToken<LinkedHashMap<String, Oda>>(){}.getType();
             odalar = gson.fromJson(jsonObject.get("odalar"), odalarType);
 
-            Type arsivType = new TypeToken<TreeMap<LocalDate, Rezervasyon>>(){}.getType();
+            // AÇIK KAPATILDI: JSON'dan List olarak okunuyor
+            Type arsivType = new TypeToken<ArrayList<Rezervasyon>>(){}.getType();
             tamamlananRezervasyonlar = gson.fromJson(jsonObject.get("arsiv"), arsivType);
 
             if (musteriler == null) musteriler = new LinkedHashMap<>();
-            if (tamamlananRezervasyonlar == null) tamamlananRezervasyonlar = new TreeMap<>();
+            if (tamamlananRezervasyonlar == null) tamamlananRezervasyonlar = new ArrayList<>();
 
             if (odalar == null) {
                 odalar = new LinkedHashMap<>();
@@ -100,17 +104,11 @@ public class OtelYonetimi {
         }
     }
 
-    // ŞUBE BAZLI FİYATLANDIRMA MANTIĞI ENTEGRE EDİLDİ
     private void odaEkle() {
         String subeAdi = DOSYA_ADI.replace(".json", "");
 
-        // En yüksek fiyatlar Bayburt şubesi için (İstediğin gibi)
-        int fiyat1Kisi = 2000;
-        int fiyat2Kisi = 3000;
-        int fiyat3Kisi = 4000;
-        int fiyat4Kisi = 5000;
+        int fiyat1Kisi = 2000; int fiyat2Kisi = 3000; int fiyat3Kisi = 4000; int fiyat4Kisi = 5000;
 
-        // Diğer şubeler Bayburt minimalinde ölçeklendiriliyor
         if (subeAdi.equals("Çorlu")) {
             fiyat1Kisi = 1200; fiyat2Kisi = 1800; fiyat3Kisi = 2400; fiyat4Kisi = 3200;
         } else if (subeAdi.equals("Los Angeles")) {
@@ -121,31 +119,22 @@ public class OtelYonetimi {
 
         for (int i = 1; i <= 16; i++) {
             String odaNo = String.valueOf(i);
-            int kapasite;
-            int odaFiyati;
+            int kapasite; int odaFiyati;
 
-            if (i <= 4) {
-                kapasite = 1; odaFiyati = fiyat1Kisi;
-            } else if (i <= 8) {
-                kapasite = 2; odaFiyati = fiyat2Kisi;
-            } else if (i <= 12) {
-                kapasite = 3; odaFiyati = fiyat3Kisi;
-            } else {
-                kapasite = 4; odaFiyati = fiyat4Kisi;
-            }
+            if (i <= 4) { kapasite = 1; odaFiyati = fiyat1Kisi; }
+            else if (i <= 8) { kapasite = 2; odaFiyati = fiyat2Kisi; }
+            else if (i <= 12) { kapasite = 3; odaFiyati = fiyat3Kisi; }
+            else { kapasite = 4; odaFiyati = fiyat4Kisi; }
 
             odalar.put(odaNo, new Oda(odaNo, kapasite, odaFiyati));
         }
     }
 
-    // KULLANICININ SEÇERKEN FİYATI GÖRMESİNİ SAĞLAYAN METOT
     public List<String> uygunOdalariGetir(int kisiSayisi, LocalDate bas, LocalDate bit) {
         List<String> uygunlar = new ArrayList<>();
 
         for (Oda oda : odalar.values()) {
-            // ARTIK musaitMi KONTROLÜ YAPMIYORUZ, KAPASİTESİ UYAN TÜM ODALARI GETİRİYORUZ
             if (oda.getKapasite() == kisiSayisi) {
-
                 int odadakiKisi = oda.getTarihtekiKisiSayisi(bas, bit);
                 String durumMesaji;
 
@@ -165,7 +154,6 @@ public class OtelYonetimi {
 
     public String musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih) {
         try {
-            // Güvenlik Önlemi: Eğer arayüzden oda verisi "1 (Gecelik: 2000 TL)" şeklinde gelirse sadece "1" kısmını ayıklar
             if (odaNo != null && odaNo.contains(" ")) {
                 odaNo = odaNo.split(" ")[0];
             }
@@ -185,9 +173,8 @@ public class OtelYonetimi {
                 Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.getOdaNo(), baslangic, bitis);
                 talepEdilenOda.rezervasyonEkle(yeniRezervasyon);
 
-                // TOPLAM FATURA HESAPLAMA MANTIĞI (BONUS)
                 long gunSayisi = ChronoUnit.DAYS.between(baslangic, bitis);
-                if (gunSayisi <= 0) gunSayisi = 1; // Aynı gün çıkış toleransı
+                if (gunSayisi <= 0) gunSayisi = 1;
                 long toplamTutar = gunSayisi * talepEdilenOda.getGunlukFiyat();
 
                 save();
@@ -223,7 +210,8 @@ public class OtelYonetimi {
 
         if (iptalEdilecek != null) {
             oda.rezervasyonSil(iptalEdilecek);
-            tamamlananRezervasyonlar.put(iptalEdilecek.getBitisTarihi(), iptalEdilecek);
+            // AÇIK KAPATILDI: Artık List'e ekleniyor, kimse kimseyi ezmiyor
+            tamamlananRezervasyonlar.add(iptalEdilecek);
 
             Rezervasyon siradakiUygun = beklemeListesi.siradakiUygunTalebiAl(oda);
             String ekMesaj = "";
@@ -236,6 +224,7 @@ public class OtelYonetimi {
             save();
             return "Çıkış başarılı. Kayıt arşive aktarıldı." + ekMesaj;
         } else {
+            // NOT: Zaten bir kere çıkış yapan kişiye tekrar çıkış yapmaya basarsan kod bu hataya düşer, güvenlidir.
             return "Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.";
         }
     }
@@ -252,8 +241,9 @@ public class OtelYonetimi {
             return "Arşivde hiç kayıt yok.";
         }
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<LocalDate, Rezervasyon> entry : tamamlananRezervasyonlar.entrySet()) {
-            sb.append("Çıkış Tarihi: ").append(entry.getKey()).append(" | Detay: ").append(entry.getValue()).append("\n");
+        // AÇIK KAPATILDI: Döngü yapısı List'e göre düzenlendi
+        for (Rezervasyon rez : tamamlananRezervasyonlar) {
+            sb.append("Çıkış Tarihi: ").append(rez.getBitisTarihi()).append(" | Detay: ").append(rez).append("\n");
         }
         return sb.toString();
     }
@@ -270,7 +260,39 @@ public class OtelYonetimi {
         return toplam;
     }
 
-    public int getTamamlananRezervasyonSayisi() {
-        return tamamlananRezervasyonlar.size();
+    // AÇIK KAPATILDI: Akıllı Hasılat Algoritması (Çifte Fatura Kesmeyi Önler)
+    public long getToplamHasilat() {
+        long toplamKasa = 0;
+        // Oda bazlı faturalandırılmış günleri tutmak için bir harita
+        Map<String, Set<LocalDate>> faturalananGunler = new HashMap<>();
+
+        for (Rezervasyon rez : tamamlananRezervasyonlar) {
+            String odaNo = rez.getOdaNo();
+            Oda oda = odalar.get(odaNo);
+
+            if (oda != null) {
+                faturalananGunler.putIfAbsent(odaNo, new HashSet<>());
+                Set<LocalDate> odaninGunleri = faturalananGunler.get(odaNo);
+
+                LocalDate bas = rez.getBaslangicTarihi();
+                LocalDate bit = rez.getBitisTarihi();
+
+                // Müşterinin kaldığı her günü tek tek kontrol et
+                for (LocalDate tarih = bas; tarih.isBefore(bit); tarih = tarih.plusDays(1)) {
+                    // Eğer bu gün, bu oda için daha önce kasaya EKLENMEDİYSE ekle
+                    if (!odaninGunleri.contains(tarih)) {
+                        odaninGunleri.add(tarih);
+                        toplamKasa += oda.getGunlukFiyat(); // Kasaya ekle
+                    }
+                }
+
+                // Günübirlik konaklamaları da güvence altına alıyoruz
+                if (bas.isEqual(bit) && !odaninGunleri.contains(bas)) {
+                    odaninGunleri.add(bas);
+                    toplamKasa += oda.getGunlukFiyat();
+                }
+            }
+        }
+        return toplamKasa;
     }
 }

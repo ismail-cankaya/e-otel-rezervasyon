@@ -36,7 +36,7 @@ public class MerkeziSistem {
 
         int genelKayitli = 0;
         int genelAktif = 0;
-        int genelArsiv = 0;
+        long genelHasilat = 0; // YENİ: Toplam para için eklendi
 
         for (Map.Entry<String, OtelYonetimi> entry : subeler.entrySet()) {
             String subeAdi = entry.getKey();
@@ -44,23 +44,23 @@ public class MerkeziSistem {
 
             int kayitli = sube.getTümZamanlarKayitliMusteri();
             int aktif = sube.getAktifKonaklayanSayisi();
-            int arsiv = sube.getTamamlananRezervasyonSayisi();
+            long hasilat = sube.getToplamHasilat(); // YENİ: Şubenin kasası çekiliyor
 
             genelKayitli += kayitli;
             genelAktif += aktif;
-            genelArsiv += arsiv;
+            genelHasilat += hasilat;
 
             rapor.append("📍 Şube: ").append(subeAdi).append("\n");
             rapor.append("  -> Tüm Zamanlarda Kayıtlı Müşteri: ").append(kayitli).append("\n");
-            rapor.append("  -> Aktif Konaklayan Müşteri: ").append(aktif).append("\n");
-            rapor.append("  -> Arşivdeki (Geçmiş) İşlem Sayısı: ").append(arsiv).append("\n");
+            rapor.append("  -> Aktif Konaklayan Müşteri Sayısı: ").append(aktif).append("\n");
+            rapor.append("  -> Toplam Kasa (Hasılat): ").append(hasilat).append(" TL\n");
             rapor.append("-----------------------------------------\n");
         }
 
         rapor.append("\n📊 GENEL ZİNCİR ÖZETİ:\n");
         rapor.append("Toplam Sistemdeki Müşteri Hesabı: ").append(genelKayitli).append("\n");
         rapor.append("Şu An Aktif Kalan Toplam Müşteri: ").append(genelAktif).append("\n");
-        rapor.append("Bugüne Kadar Tamamlanan Rezervasyon: ").append(genelArsiv).append("\n");
+        rapor.append("Tüm Zincirin Toplam Hasılatı: ").append(genelHasilat).append(" TL\n");
         rapor.append("=========================================\n");
 
         return rapor.toString();
