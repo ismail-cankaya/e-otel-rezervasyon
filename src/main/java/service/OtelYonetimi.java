@@ -306,4 +306,64 @@ public class OtelYonetimi {
         }
         return toplamKasa;
     }
+    /*
+     Otelde o an aktif olarak konaklayan tüm müşterileri, TC ve Oda bilgileriyle listeler.
+     */
+    public String aktifKonaklayanlariGoster() {
+        StringBuilder sb = new StringBuilder();
+        boolean musteriVar = false;
+
+        for (Oda oda : odalar.values()) {
+            for (Rezervasyon rez : oda.getAktifRezervasyonlar()) {
+                musteriVar = true;
+                Musteri m = rez.getMusteri();
+                sb.append("Oda: ").append(oda.getOdaNo())
+                        .append(" | TC: ").append(m.getTcNo())
+                        .append(" | İsim: ").append(m.getAdSoyad())
+                        .append(" | Tarih: ").append(rez.getBaslangicTarihi()).append(" -> ").append(rez.getBitisTarihi())
+                        .append("\n");
+            }
+        }
+
+        if (!musteriVar) {
+            return "Şu anda otelde konaklayan aktif müşteri bulunmamaktadır.";
+        }
+
+        return sb.toString();
+    }
+
+    /*
+      HashMap (O(1)) kullanarak TC kimlik numarasına göre müşteriyi anında bulur.
+     Geçmişte kalmış veya şu an kalan fark etmeksizin durumu raporlar.
+     */
+    public String tcIleMusteriSorgula(String tc) {
+        // 1. HashMap sayesinde O(1) sürede müşteriyi buluyoruz
+        Musteri m = musteriler.get(tc);
+
+        if (m == null) {
+            return "Sonuç: Sistemde bu TC (" + tc + ") ile kayıtlı hiçbir müşteri yok.";
+        }
+
+        // 2. Müşteri sistemde var, acaba şu an otelde bir odada kalıyor mu?
+        StringBuilder sb = new StringBuilder();
+        boolean aktifOdasiVar = false;
+
+        for (Oda oda : odalar.values()) {
+            for (Rezervasyon rez : oda.getAktifRezervasyonlar()) {
+                if (rez.getMusteri().getTcNo().equals(tc)) {
+                    aktifOdasiVar = true;
+                    sb.append("Müşteri Bulundu: ").append(m.getAdSoyad())
+                            .append("\nDurum: ŞU AN OTELDE KONAKLIYOR")
+                            .append("\nOda No: ").append(oda.getOdaNo())
+                            .append("\nÇıkış Tarihi: ").append(rez.getBitisTarihi()).append("\n");
+                }
+            }
+        }
+
+        if (aktifOdasiVar) {
+            return sb.toString();
+        } else {
+            return "Müşteri Bulundu: " + m.getAdSoyad() + "\nDurum: Sistemde kaydı var ancak şu an aktif bir konaklaması yok (Eski müşteri).";
+        }
+    }
 }

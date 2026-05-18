@@ -1,11 +1,26 @@
 {
-  "musteriler": {},
+  "musteriler": {
+    "11111111111": {
+      "tcNo": "11111111111",
+      "adSoyad": "deniz k"
+    }
+  },
   "odalar": {
     "1": {
       "odaNo": "1",
       "kapasite": 1,
       "gunlukFiyat": 1200,
-      "aktifRezervasyonlar": []
+      "aktifRezervasyonlar": [
+        {
+          "musteri": {
+            "tcNo": "11111111111",
+            "adSoyad": "deniz k"
+          },
+          "odaNo": "1",
+          "baslangicTarihi": "2026-05-20",
+          "bitisTarihi": "2026-05-28"
+        }
+      ]
     },
     "2": {
       "odaNo": "2",

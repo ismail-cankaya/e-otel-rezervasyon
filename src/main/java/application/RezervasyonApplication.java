@@ -292,31 +292,56 @@ public class RezervasyonApplication extends Application {
         VBox vbox = new VBox(15);
         vbox.setPadding(new Insets(20));
 
+        // --- BUTON TANIMLAMALARI ---
         Button btnBeklemeListesi = new Button("Bekleme Listesi");
-        btnBeklemeListesi.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
+        btnBeklemeListesi.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
         btnBeklemeListesi.setMaxWidth(Double.MAX_VALUE);
 
-        Button btnGecmis = new Button("Geçmişi Görüntüle");
-        btnGecmis.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
+        Button btnGecmis = new Button("Arşiv (Geçmiş)");
+        btnGecmis.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
         btnGecmis.setMaxWidth(Double.MAX_VALUE);
 
-        // YENİ BUTON: Merkezi Rapor
+        // YENİ: Aktif konaklayanları gösteren buton
+        Button btnAktifKalanlar = new Button("İçeridekiler (Aktif)");
+        btnAktifKalanlar.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+        btnAktifKalanlar.setMaxWidth(Double.MAX_VALUE);
+
+        // YENİ: Merkez rapor butonu
         Button btnMerkezRapor = new Button("Merkezi Zincir Raporu");
-        btnMerkezRapor.setStyle("-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
+        btnMerkezRapor.setStyle("-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
         btnMerkezRapor.setMaxWidth(Double.MAX_VALUE);
 
-        HBox butonKutusu = new HBox(10, btnBeklemeListesi, btnGecmis);
+        // --- YENİ: TC İLE SORGULAMA ALANI ---
+        HBox tcSorguKutusu = new HBox(10);
+        tcSorguKutusu.setAlignment(Pos.CENTER_LEFT);
+        tcSorguKutusu.setStyle("-fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-color: #ecf0f1;");
+
+        TextField txtTCSorgu = new TextField();
+        txtTCSorgu.setPromptText("Sorgulanacak TC No");
+        txtTCSorgu.setStyle("-fx-background-radius: 5;");
+
+        Button btnTCSorgula = new Button("Müşteri Ara (O(1))");
+        btnTCSorgula.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+
+        tcSorguKutusu.getChildren().addAll(new Label("TC ile Arama: "), txtTCSorgu, btnTCSorgula);
+        HBox.setHgrow(txtTCSorgu, Priority.ALWAYS); // TextField alanı doldursun
+
+        // --- BUTONLARI EKRANA DİZME (YATAY KUTULAR) ---
+        HBox ustButonlar = new HBox(10, btnBeklemeListesi, btnGecmis, btnAktifKalanlar);
         HBox.setHgrow(btnBeklemeListesi, Priority.ALWAYS);
         HBox.setHgrow(btnGecmis, Priority.ALWAYS);
-        butonKutusu.setAlignment(Pos.CENTER);
+        HBox.setHgrow(btnAktifKalanlar, Priority.ALWAYS);
+        ustButonlar.setAlignment(Pos.CENTER);
 
+        // --- SONUÇ GÖSTERİM ALANI ---
         TextArea txtSonuc = new TextArea();
         txtSonuc.setEditable(false);
         txtSonuc.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-font-family: 'Monospaced'; -fx-font-size: 13px;");
         txtSonuc.setPrefHeight(250);
         VBox.setVgrow(txtSonuc, Priority.ALWAYS);
 
-        // Bekleme listesi ve Geçmiş, üstten seçili olan (aktif) şubeden çekilir
+        // --- BUTON OLAYLARI (EVENTS) ---
+
         btnBeklemeListesi.setOnAction(e -> {
             String aktifSube = cmbAktifSube.getValue();
             String hamVeri = merkez.subeGetir(aktifSube).beklemeListesiniGoster();
@@ -326,17 +351,36 @@ public class RezervasyonApplication extends Application {
         btnGecmis.setOnAction(e -> {
             String aktifSube = cmbAktifSube.getValue();
             String hamVeri = merkez.subeGetir(aktifSube).gecmisRezervasyonlariGoster();
-            // Başlığı "Aktif Kalan" mantığına paralel olarak "Arşivlenmiş Müşteri Kayıtları" şeklinde güncelledik
             txtSonuc.setText("--- " + aktifSube + " Şubesi Arşivlenmiş Müşteri Kayıtları ---\n\n" + tabloGorunumuYap(hamVeri));
         });
 
-        // Merkez Raporu tüm sistemi tarar, tabloGorunumuYap() metoduna girmez (kendi tasarımı var)
+        // YENİ METOT: Aktif Konaklayanları Listele
+        btnAktifKalanlar.setOnAction(e -> {
+            String aktifSube = cmbAktifSube.getValue();
+            String veri = merkez.subeGetir(aktifSube).aktifKonaklayanlariGoster();
+            txtSonuc.setText("--- " + aktifSube + " Şubesi Aktif Konaklayanlar (In-House) ---\n\n" + veri);
+        });
+
         btnMerkezRapor.setOnAction(e -> {
             String rapor = merkez.merkeziRaporOlustur();
             txtSonuc.setText(rapor);
         });
 
-        vbox.getChildren().addAll(butonKutusu, btnMerkezRapor, txtSonuc);
+        // YENİ METOT: TC ile Müşteri Sorgula
+        btnTCSorgula.setOnAction(e -> {
+            String tc = txtTCSorgu.getText().trim();
+            if(tc.isEmpty()) {
+                txtSonuc.setText("Lütfen sorgulamak için bir TC Kimlik Numarası girin.");
+                return;
+            }
+
+            String aktifSube = cmbAktifSube.getValue();
+            String veri = merkez.subeGetir(aktifSube).tcIleMusteriSorgula(tc);
+            txtSonuc.setText("--- " + aktifSube + " Şubesi Müşteri Sorgu Sonucu ---\n\n" + veri);
+        });
+
+        // Hepsini Ana Dikey Kutuya (VBox) Ekle
+        vbox.getChildren().addAll(ustButonlar, tcSorguKutusu, btnMerkezRapor, txtSonuc);
         return vbox;
     }
 
