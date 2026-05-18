@@ -141,10 +141,23 @@ public class OtelYonetimi {
     // KULLANICININ SEÇERKEN FİYATI GÖRMESİNİ SAĞLAYAN METOT
     public List<String> uygunOdalariGetir(int kisiSayisi, LocalDate bas, LocalDate bit) {
         List<String> uygunlar = new ArrayList<>();
+
         for (Oda oda : odalar.values()) {
-            if (oda.getKapasite() == kisiSayisi && oda.musaitMi(bas, bit)) {
-                // Oda numarası ile gecelik fiyat birleştirilerek arayüze yollanıyor"
-                uygunlar.add(oda.getOdaNo() + " Numaralı Oda - Gecelik: " + oda.getGunlukFiyat() + " TL");
+            // ARTIK musaitMi KONTROLÜ YAPMIYORUZ, KAPASİTESİ UYAN TÜM ODALARI GETİRİYORUZ
+            if (oda.getKapasite() == kisiSayisi) {
+
+                int odadakiKisi = oda.getTarihtekiKisiSayisi(bas, bit);
+                String durumMesaji;
+
+                if (odadakiKisi == 0) {
+                    durumMesaji = " | Durum: Boş";
+                } else if (odadakiKisi < oda.getKapasite()) {
+                    durumMesaji = " | Durum: Odada " + odadakiKisi + " kişi kalıyor (Müsait)";
+                } else {
+                    durumMesaji = " | Durum: TAMAMEN DOLU (Bekleme Listesi)";
+                }
+
+                uygunlar.add(oda.getOdaNo() + " Numaralı Oda - Gecelik: " + oda.getGunlukFiyat() + " TL" + durumMesaji);
             }
         }
         return uygunlar;

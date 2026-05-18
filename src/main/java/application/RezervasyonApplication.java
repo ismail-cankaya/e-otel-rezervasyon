@@ -111,7 +111,7 @@ public class RezervasyonApplication extends Application {
 
         // --- 2. AŞAMA: SONUÇLAR VE DİNAMİK FORM ---
         ComboBox<String> cmbOdaNo = new ComboBox<>();
-        cmbOdaNo.setPromptText("Filtrelenen Odalar");
+        cmbOdaNo.setPromptText("Müsait Odaları Göster");
         cmbOdaNo.setDisable(true);
         cmbOdaNo.setPrefWidth(210);
 

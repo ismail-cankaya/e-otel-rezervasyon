@@ -83,6 +83,11 @@ public class Oda implements Serializable {
         return oTarihtekiKisiSayisi < kapasite;
     }
 
+    // YENİ EKLENEN METOT: O tarihlerde odada kaç kişi olduğunu döndürür
+    public int getTarihtekiKisiSayisi(LocalDate baslangic, LocalDate bitis) {
+        return agac.cakisanSayisiniBul(baslangic, bitis);
+    }
+
     // --- INTERVAL TREE (ARALIK AĞACI) ---
 
     private static class AralikAgaciDugumu implements Serializable {
