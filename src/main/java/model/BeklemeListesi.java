@@ -34,7 +34,6 @@ public class BeklemeListesi implements Serializable {
     private Dugum bas; // Listenin başı
     private Dugum son; // Listenin sonu
 
-    // HATA DÜZELTİLDİ: Parametre isimleri 'baslangicTarihi' ve 'bitisTarihi' yapıldı
     public void kuyrugaEkle(Musteri musteri, String odaNo, LocalDate baslangicTarihi, LocalDate bitisTarihi) {
         Dugum yeniDugum = new Dugum(musteri, odaNo, baslangicTarihi, bitisTarihi);
         if (this.bas == null) {

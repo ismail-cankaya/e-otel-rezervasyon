@@ -24,9 +24,6 @@ public class MerkeziSistem {
         return subeler.get(subeAdi.trim());
     }
 
-    // --- HATAYI ÇÖZEN KISIM BURASI ---
-    // Artık 'void' değil, JavaFX arayüzünde göstermek için 'String' döndürüyor!
-    // ... (Dosyanın üst kısımları aynı) ...
 
     public String merkeziRaporOlustur() {
         StringBuilder rapor = new StringBuilder();
