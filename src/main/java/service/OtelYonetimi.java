@@ -161,6 +161,10 @@ public class OtelYonetimi {
             LocalDate baslangic = LocalDate.parse(basTarih);
             LocalDate bitis = LocalDate.parse(bitTarih);
 
+            if (baslangic.isBefore(LocalDate.now())) {
+                return "Hata: Geçmiş bir tarihe (bugünden öncesine) rezervasyon yapılamaz!";
+            }
+
             musteriler.putIfAbsent(tc, new Musteri(tc, ad));
             Musteri musteri = musteriler.get(tc);
 
@@ -179,7 +183,7 @@ public class OtelYonetimi {
 
                 save();
                 return "Başarılı: " + ad + " adına " + odaNo + " nolu odaya kayıt yapıldı.\n" +
-                        "💰 Gecelik: " + talepEdilenOda.getGunlukFiyat() + " TL | Süre: " + gunSayisi + " Gün | Toplam Fatura: " + toplamTutar + " TL";
+                        "Gecelik: " + talepEdilenOda.getGunlukFiyat() + " TL | Süre: " + gunSayisi + " Gün | Toplam Fatura: " + toplamTutar + " TL";
             } else {
                 beklemeListesi.kuyrugaEkle(musteri, odaNo, baslangic, bitis);
                 save();
@@ -216,9 +220,16 @@ public class OtelYonetimi {
             Rezervasyon siradakiUygun = beklemeListesi.siradakiUygunTalebiAl(oda);
             String ekMesaj = "";
             if (siradakiUygun != null) {
-                oda.rezervasyonEkle(siradakiUygun);
-                ekMesaj = "\n🔔 SİSTEM NOTU: Oda boşaldığı için bekleme listesindeki '" +
-                        siradakiUygun.getMusteri().getAdSoyad() + "' otomatik olarak bu odaya yerleştirildi!";
+                // YENİ KONTROL: Bekleme listesindeki kişi, odanın GÜNCEL kapasitesine uyuyor mu?
+                if (oda.musaitMi(siradakiUygun.getBaslangicTarihi(), siradakiUygun.getBitisTarihi())) {
+                    oda.rezervasyonEkle(siradakiUygun);
+                    ekMesaj = "\n  SİSTEM NOTU: Oda boşaldığı için bekleme listesindeki '" +
+                            siradakiUygun.getMusteri().getAdSoyad() + "' otomatik olarak bu odaya yerleştirildi!";
+                } else {
+                    // Hala sığmıyorsa, sırasını kaybetmemesi için kuyruğa geri koyuyoruz
+                    beklemeListesi.kuyrugaEkle(siradakiUygun.getMusteri(), oda.getOdaNo(),
+                            siradakiUygun.getBaslangicTarihi(), siradakiUygun.getBitisTarihi());
+                }
             }
 
             save();

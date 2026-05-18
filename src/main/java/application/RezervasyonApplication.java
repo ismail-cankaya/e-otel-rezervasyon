@@ -210,12 +210,12 @@ public class RezervasyonApplication extends Application {
                     String tc = txtTc.getText().trim();
                     String ad = txtAd.getText().trim();
 
-                    if(tc.length() == 11 && !ad.isEmpty()) {
+                    if(tc.matches("\\d{11}") && !ad.isEmpty()) {
                         String sonuc = merkez.subeGetir(aktifSube).musteriKayitVeRezervasyon(
                                 tc, ad, secilenOda, dpBas.getValue().toString(), dpBit.getValue().toString());
                         islemSonucu.append(sonuc).append("\n");
                     } else {
-                        islemSonucu.append("Hata: Geçersiz TC (11 hane olmalı) veya boş isim!\n");
+                        islemSonucu.append("Hata: Geçersiz TC (Sadece 11 hane RAKAM olmalı) veya boş isim!\n");
                     }
                 }
             }
