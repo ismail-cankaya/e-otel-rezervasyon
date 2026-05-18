@@ -84,113 +84,149 @@ public class RezervasyonApplication extends Application {
     }
 
     private VBox createRezervasyonFormu() {
-        Label lblBaslik = new Label("Rezervasyon İşlemleri");
+        // Başlığı tek başına düzgünce ortalıyoruz
+        Label lblBaslik = new Label("Yeni Rezervasyon & Oda Arama");
         lblBaslik.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         lblBaslik.setMaxWidth(Double.MAX_VALUE);
         lblBaslik.setAlignment(Pos.CENTER);
 
-        GridPane grid = new GridPane();
-        grid.setPadding(new Insets(10, 0, 20, 0));
-        grid.setVgap(15);
-        grid.setHgap(15);
+        // --- 1. AŞAMA: ARAMA KRİTERLERİ ---
+        GridPane searchGrid = new GridPane();
+        searchGrid.setVgap(10); searchGrid.setHgap(15);
 
-        TextField txtTc = new TextField();
-        txtTc.setStyle("-fx-background-radius: 5; -fx-padding: 6;");
-        txtTc.setPrefWidth(210);
+        ComboBox<Integer> cmbKisiSayisi = new ComboBox<>();
+        cmbKisiSayisi.getItems().addAll(1, 2, 3, 4);
+        cmbKisiSayisi.setPromptText("Kişi Sayısı");
 
-        TextField txtAd = new TextField();
-        txtAd.setStyle("-fx-background-radius: 5; -fx-padding: 6;");
-        txtAd.setPrefWidth(210);
+        DatePicker dpBas = new DatePicker(); dpBas.setPromptText("Giriş Tarihi");
+        DatePicker dpBit = new DatePicker(); dpBit.setPromptText("Çıkış Tarihi");
 
+        Button btnOdaBul = new Button("Uygun Odaları Getir");
+        btnOdaBul.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+
+        searchGrid.add(new Label("Kişi Sayısı:"), 0, 0); searchGrid.add(cmbKisiSayisi, 1, 0);
+        searchGrid.add(new Label("Giriş Tarihi:"), 0, 1); searchGrid.add(dpBas, 1, 1);
+        searchGrid.add(new Label("Çıkış Tarihi:"), 0, 2); searchGrid.add(dpBit, 1, 2);
+        searchGrid.add(btnOdaBul, 1, 3);
+
+        // --- 2. AŞAMA: SONUÇLAR VE DİNAMİK FORM ---
         ComboBox<String> cmbOdaNo = new ComboBox<>();
-        cmbOdaNo.setPromptText("Oda Seçiniz");
-        cmbOdaNo.setStyle("-fx-background-radius: 5;");
+        cmbOdaNo.setPromptText("Filtrelenen Odalar");
+        cmbOdaNo.setDisable(true);
         cmbOdaNo.setPrefWidth(210);
-        for (int i = 1; i <= 100; i++) {
-            cmbOdaNo.getItems().add(String.valueOf(i));
-        }
 
-        DatePicker dpBasTarih = new DatePicker();
-        dpBasTarih.setPromptText("Takvimden Seçin");
-        dpBasTarih.setStyle("-fx-background-radius: 5;");
-        dpBasTarih.setPrefWidth(210);
-
-        DatePicker dpBitTarih = new DatePicker();
-        dpBitTarih.setPromptText("Takvimden Seçin");
-        dpBitTarih.setStyle("-fx-background-radius: 5;");
-        dpBitTarih.setPrefWidth(210);
-
-        grid.add(new Label("TC Kimlik No:"), 0, 0); grid.add(txtTc, 1, 0);
-        grid.add(new Label("Ad Soyad:"), 0, 1); grid.add(txtAd, 1, 1);
-        grid.add(new Label("Oda No:"), 0, 2); grid.add(cmbOdaNo, 1, 2);
-        grid.add(new Label("Giriş Tarihi:"), 0, 3); grid.add(dpBasTarih, 1, 3);
-        grid.add(new Label("Çıkış Tarihi:"), 0, 4); grid.add(dpBitTarih, 1, 4);
-
-        Button btnKaydet = new Button("Rezervasyon Yap");
-        btnKaydet.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
-
-        Button btnIptal = new Button("İptal");
-        btnIptal.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
-
-        HBox butonKutusu = new HBox(10, btnKaydet, btnIptal);
-        butonKutusu.setAlignment(Pos.CENTER_RIGHT);
+        VBox dinamikMusteriKutusu = new VBox(10);
+        dinamikMusteriKutusu.setStyle("-fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-radius: 5;");
 
         Label lblSonuc = new Label();
-        lblSonuc.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+        lblSonuc.setStyle("-fx-font-weight: bold;");
+        lblSonuc.setWrapText(true); // Uzun hata veya başarı mesajları ekrandan taşmasın, alt satıra geçsin
 
-        btnKaydet.setOnAction(e -> {
-            String tcNo = txtTc.getText().trim();
-            String adSoyad = txtAd.getText().trim();
-            String secilenOda = cmbOdaNo.getValue();
-
-            if (tcNo.isEmpty() || adSoyad.isEmpty()) {
+        // ODA BUL BUTONUNA TIKLANINCA
+        btnOdaBul.setOnAction(e -> {
+            if (cmbKisiSayisi.getValue() == null || dpBas.getValue() == null || dpBit.getValue() == null) {
+                lblSonuc.setText("Lütfen arama için kişi sayısı ve tarihleri eksiksiz girin.");
                 lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
-                lblSonuc.setText("Hata: TC Kimlik veya Ad Soyad boş bırakılamaz!");
+                return;
+            }
+            if (!dpBit.getValue().isAfter(dpBas.getValue())) {
+                lblSonuc.setText("Çıkış tarihi girişten sonra olmalıdır!");
+                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
                 return;
             }
 
-            try {
-                Long.parseLong(tcNo);
-                if(tcNo.length() != 11) {
-                    lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
-                    lblSonuc.setText("Hata: TC Kimlik numarası 11 haneli olmalıdır!");
-                    return;
-                }
-            } catch (NumberFormatException ex) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
-                lblSonuc.setText("Hata: TC Kimlik sadece rakamlardan oluşmalıdır!");
-                return;
-            }
-
-            if (secilenOda == null || dpBasTarih.getValue() == null || dpBitTarih.getValue() == null) {
-                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
-                lblSonuc.setText("Hata: Lütfen oda ve tarih seçimlerini tamamlayınız.");
-                return;
-            }
-
-            // DÜZELTME: İşlem aktif şube üzerinden yapılıyor!
             String aktifSube = cmbAktifSube.getValue();
-            String sonuc = merkez.subeGetir(aktifSube).musteriKayitVeRezervasyon(
-                    tcNo, adSoyad, secilenOda,
-                    dpBasTarih.getValue().toString(), dpBitTarih.getValue().toString()
-            );
+            java.util.List<String> uygunOdalar = merkez.subeGetir(aktifSube).uygunOdalariGetir(
+                    cmbKisiSayisi.getValue(), dpBas.getValue(), dpBit.getValue());
 
-            lblSonuc.setStyle("-fx-text-fill: #27ae60;");
-            lblSonuc.setText(sonuc);
+            cmbOdaNo.getItems().clear();
+            if (uygunOdalar.isEmpty()) {
+                lblSonuc.setText("Bu tarihlerde " + cmbKisiSayisi.getValue() + " kişilik uygun oda bulunamadı.");
+                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
+                cmbOdaNo.setDisable(true);
+                dinamikMusteriKutusu.getChildren().clear();
+            } else {
+                cmbOdaNo.getItems().addAll(uygunOdalar);
+                cmbOdaNo.setDisable(false);
+                lblSonuc.setText(uygunOdalar.size() + " adet uygun oda bulundu.");
+                lblSonuc.setStyle("-fx-text-fill: #27ae60;");
 
-            txtTc.clear();
-            txtAd.clear();
-            cmbOdaNo.getSelectionModel().clearSelection();
-            dpBasTarih.setValue(null);
-            dpBitTarih.setValue(null);
+                dinamikMusteriKutusu.getChildren().clear();
+                for (int i = 1; i <= cmbKisiSayisi.getValue(); i++) {
+                    HBox kisiSatiri = new HBox(10);
+                    kisiSatiri.setAlignment(Pos.CENTER_LEFT);
+                    TextField txtTc = new TextField(); txtTc.setPromptText(i + ". Kişi TC No");
+                    TextField txtAd = new TextField(); txtAd.setPromptText(i + ". Kişi Ad Soyad");
+                    kisiSatiri.getChildren().addAll(new Label(i + ". Misafir: "), txtTc, txtAd);
+                    dinamikMusteriKutusu.getChildren().add(kisiSatiri);
+                }
+            }
         });
 
-        btnIptal.setOnAction(e -> {
-            txtTc.clear(); txtAd.clear(); cmbOdaNo.getSelectionModel().clearSelection();
-            dpBasTarih.setValue(null); dpBitTarih.setValue(null); lblSonuc.setText("");
+        // --- 3. AŞAMA: AKSİYON BUTONLARI (YAN YANA EN ALTTA) ---
+        Button btnKaydet = new Button("Tüm Kişileri Kaydet");
+        btnKaydet.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
+
+        Button btnTemizle = new Button("Çıkış / Temizle");
+        btnTemizle.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
+
+        // YENİ: İki butonun arasını tamamen açacak esnek boşluk elemanı
+        javafx.scene.layout.Region yay = new javafx.scene.layout.Region();
+        HBox.setHgrow(yay, Priority.ALWAYS);
+
+        // Yay elemanını iki butonun ortasına koyuyoruz
+        HBox butonKutusu = new HBox(btnKaydet, yay, btnTemizle);
+        butonKutusu.setAlignment(Pos.CENTER_LEFT);
+
+        // TEMİZLE BUTONUNUN İŞLEVİ
+        btnTemizle.setOnAction(e -> {
+            cmbKisiSayisi.getSelectionModel().clearSelection();
+            dpBas.setValue(null);
+            dpBit.setValue(null);
+            cmbOdaNo.getItems().clear();
+            cmbOdaNo.setDisable(true);
+            dinamikMusteriKutusu.getChildren().clear();
+            lblSonuc.setText("");
         });
 
-        VBox vbox = new VBox(20, lblBaslik, grid, butonKutusu, lblSonuc);
+        // KAYDET BUTONUNUN İŞLEVİ
+        btnKaydet.setOnAction(e -> {
+            if (cmbOdaNo.getValue() == null) {
+                lblSonuc.setText("Lütfen filtrelenen listeden bir oda seçiniz.");
+                lblSonuc.setStyle("-fx-text-fill: #e74c3c;");
+                return;
+            }
+
+            String secilenOda = cmbOdaNo.getValue();
+            String aktifSube = cmbAktifSube.getValue();
+            StringBuilder islemSonucu = new StringBuilder();
+
+            for (javafx.scene.Node node : dinamikMusteriKutusu.getChildren()) {
+                if (node instanceof HBox) {
+                    HBox satir = (HBox) node;
+                    TextField txtTc = (TextField) satir.getChildren().get(1);
+                    TextField txtAd = (TextField) satir.getChildren().get(2);
+
+                    String tc = txtTc.getText().trim();
+                    String ad = txtAd.getText().trim();
+
+                    if(tc.length() == 11 && !ad.isEmpty()) {
+                        String sonuc = merkez.subeGetir(aktifSube).musteriKayitVeRezervasyon(
+                                tc, ad, secilenOda, dpBas.getValue().toString(), dpBit.getValue().toString());
+                        islemSonucu.append(sonuc).append("\n");
+                    } else {
+                        islemSonucu.append("Hata: Geçersiz TC (11 hane olmalı) veya boş isim!\n");
+                    }
+                }
+            }
+            lblSonuc.setStyle("-fx-text-fill: #2c3e50;");
+            lblSonuc.setText(islemSonucu.toString());
+            dinamikMusteriKutusu.getChildren().clear();
+            cmbOdaNo.getItems().clear(); cmbOdaNo.setDisable(true);
+        });
+
+        // Tüm arayüz elemanlarını düzgün bir dikey sırada topluyoruz
+        VBox vbox = new VBox(15, lblBaslik, searchGrid, cmbOdaNo, dinamikMusteriKutusu, butonKutusu, lblSonuc);
         vbox.setPadding(new Insets(20));
         return vbox;
     }
@@ -205,7 +241,8 @@ public class RezervasyonApplication extends Application {
         cmbOdaNo.setPromptText("Oda Seçiniz");
         cmbOdaNo.setStyle("-fx-background-radius: 5;");
         cmbOdaNo.setPrefWidth(210);
-        for (int i = 1; i <= 25; i++) {
+        for (int i = 1; i <= 16; i++) {
+
             cmbOdaNo.getItems().add(String.valueOf(i));
         }
 
@@ -289,7 +326,8 @@ public class RezervasyonApplication extends Application {
         btnGecmis.setOnAction(e -> {
             String aktifSube = cmbAktifSube.getValue();
             String hamVeri = merkez.subeGetir(aktifSube).gecmisRezervasyonlariGoster();
-            txtSonuc.setText("--- " + aktifSube + " Şubesi Arşivi ---\n\n" + tabloGorunumuYap(hamVeri));
+            // Başlığı "Aktif Kalan" mantığına paralel olarak "Arşivlenmiş Müşteri Kayıtları" şeklinde güncelledik
+            txtSonuc.setText("--- " + aktifSube + " Şubesi Arşivlenmiş Müşteri Kayıtları ---\n\n" + tabloGorunumuYap(hamVeri));
         });
 
         // Merkez Raporu tüm sistemi tarar, tabloGorunumuYap() metoduna girmez (kendi tasarımı var)

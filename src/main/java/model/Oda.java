@@ -8,17 +8,18 @@ import java.util.List;
 public class Oda implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    // 1. Değişkenler dış müdahaleye karşı private yapıldı
     private String odaNo;
     private int kapasite;
+    private int gunlukFiyat; // YENİ: Odanın gecelik fiyatı
     private List<Rezervasyon> aktifRezervasyonlar;
 
-    // JSON'da görünmemesi için transient kalmaya devam ediyor
     private transient AralikAgaci agac;
 
-    public Oda(String odaNo, int kapasite) {
+    // Kurucu metot güncellendi (Fiyat parametresi eklendi)
+    public Oda(String odaNo, int kapasite, int gunlukFiyat) {
         this.odaNo = odaNo;
         this.kapasite = kapasite;
+        this.gunlukFiyat = gunlukFiyat;
         this.aktifRezervasyonlar = new ArrayList<>();
         this.agac = new AralikAgaci();
     }
@@ -39,6 +40,14 @@ public class Oda implements Serializable {
 
     public void setKapasite(int kapasite) {
         this.kapasite = kapasite;
+    }
+
+    public int getGunlukFiyat() {
+        return gunlukFiyat;
+    }
+
+    public void setGunlukFiyat(int gunlukFiyat) {
+        this.gunlukFiyat = gunlukFiyat;
     }
 
     public List<Rezervasyon> getAktifRezervasyonlar() {
@@ -69,17 +78,12 @@ public class Oda implements Serializable {
         }
     }
 
-    // --- YENİ AKILLI KAPASİTE KONTROLÜ ---
     public boolean musaitMi(LocalDate baslangic, LocalDate bitis) {
-        // İstenen tarihlerdeki mevcut kayıtları say ve kapasite ile karşılaştır
         int oTarihtekiKisiSayisi = agac.cakisanSayisiniBul(baslangic, bitis);
         return oTarihtekiKisiSayisi < kapasite;
     }
 
     // --- INTERVAL TREE (ARALIK AĞACI) ---
-    // (Zaten private static class oldukları için OOP açısından mükemmeller)
-
-// --- INTERVAL TREE (ARALIK AĞACI) ---
 
     private static class AralikAgaciDugumu implements Serializable {
         Rezervasyon rez;
@@ -88,7 +92,6 @@ public class Oda implements Serializable {
 
         public AralikAgaciDugumu(Rezervasyon rez) {
             this.rez = rez;
-            // DÜZELTME: getBitisTarihi() kullanıldı
             this.maxBitis = rez.getBitisTarihi();
         }
     }
@@ -103,21 +106,18 @@ public class Oda implements Serializable {
         private AralikAgaciDugumu ekleRec(AralikAgaciDugumu dugum, Rezervasyon yeniRez) {
             if (dugum == null) return new AralikAgaciDugumu(yeniRez);
 
-            // DÜZELTME: getBaslangicTarihi() kullanıldı
             if (yeniRez.getBaslangicTarihi().isBefore(dugum.rez.getBaslangicTarihi())) {
                 dugum.sol = ekleRec(dugum.sol, yeniRez);
             } else {
                 dugum.sag = ekleRec(dugum.sag, yeniRez);
             }
 
-            // DÜZELTME: getBitisTarihi() kullanıldı
             if (dugum.maxBitis.isBefore(yeniRez.getBitisTarihi())) {
                 dugum.maxBitis = yeniRez.getBitisTarihi();
             }
             return dugum;
         }
 
-        // Çakışan aralıkları sayan metot
         public int cakisanSayisiniBul(LocalDate bas, LocalDate bit) {
             return cakisanSayisiRec(kok, bas, bit);
         }
@@ -127,17 +127,14 @@ public class Oda implements Serializable {
 
             int cakismaSayisi = 0;
 
-            // DÜZELTME: getBaslangicTarihi() ve getBitisTarihi() kullanıldı
             if (bas.isBefore(dugum.rez.getBitisTarihi()) && bit.isAfter(dugum.rez.getBaslangicTarihi())) {
                 cakismaSayisi++;
             }
 
-            // Sol dalda ihtimal varsa kontrol et
             if (dugum.sol != null && dugum.sol.maxBitis.isAfter(bas)) {
                 cakismaSayisi += cakisanSayisiRec(dugum.sol, bas, bit);
             }
 
-            // Sağ dalda ihtimal varsa kontrol et
             if (dugum.sag != null && bit.isAfter(dugum.rez.getBaslangicTarihi())) {
                 cakismaSayisi += cakisanSayisiRec(dugum.sag, bas, bit);
             }

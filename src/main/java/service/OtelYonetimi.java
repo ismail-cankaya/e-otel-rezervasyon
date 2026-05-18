@@ -9,9 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -97,8 +100,63 @@ public class OtelYonetimi {
         }
     }
 
+    // ŞUBE BAZLI FİYATLANDIRMA MANTIĞI ENTEGRE EDİLDİ
+    private void odaEkle() {
+        String subeAdi = DOSYA_ADI.replace(".json", "");
+
+        // En yüksek fiyatlar Bayburt şubesi için (İstediğin gibi)
+        int fiyat1Kisi = 2000;
+        int fiyat2Kisi = 3000;
+        int fiyat3Kisi = 4000;
+        int fiyat4Kisi = 5000;
+
+        // Diğer şubeler Bayburt minimalinde ölçeklendiriliyor
+        if (subeAdi.equals("Çorlu")) {
+            fiyat1Kisi = 1200; fiyat2Kisi = 1800; fiyat3Kisi = 2400; fiyat4Kisi = 3200;
+        } else if (subeAdi.equals("Los Angeles")) {
+            fiyat1Kisi = 1800; fiyat2Kisi = 2600; fiyat3Kisi = 3500; fiyat4Kisi = 4500;
+        } else if (subeAdi.equals("Las Vegas")) {
+            fiyat1Kisi = 1900; fiyat2Kisi = 2800; fiyat3Kisi = 3800; fiyat4Kisi = 4800;
+        }
+
+        for (int i = 1; i <= 16; i++) {
+            String odaNo = String.valueOf(i);
+            int kapasite;
+            int odaFiyati;
+
+            if (i <= 4) {
+                kapasite = 1; odaFiyati = fiyat1Kisi;
+            } else if (i <= 8) {
+                kapasite = 2; odaFiyati = fiyat2Kisi;
+            } else if (i <= 12) {
+                kapasite = 3; odaFiyati = fiyat3Kisi;
+            } else {
+                kapasite = 4; odaFiyati = fiyat4Kisi;
+            }
+
+            odalar.put(odaNo, new Oda(odaNo, kapasite, odaFiyati));
+        }
+    }
+
+    // KULLANICININ SEÇERKEN FİYATI GÖRMESİNİ SAĞLAYAN METOT
+    public List<String> uygunOdalariGetir(int kisiSayisi, LocalDate bas, LocalDate bit) {
+        List<String> uygunlar = new ArrayList<>();
+        for (Oda oda : odalar.values()) {
+            if (oda.getKapasite() == kisiSayisi && oda.musaitMi(bas, bit)) {
+                // Oda numarası ile gecelik fiyat birleştirilerek arayüze yollanıyor"
+                uygunlar.add(oda.getOdaNo() + " Numaralı Oda - Gecelik: " + oda.getGunlukFiyat() + " TL");
+            }
+        }
+        return uygunlar;
+    }
+
     public String musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih) {
         try {
+            // Güvenlik Önlemi: Eğer arayüzden oda verisi "1 (Gecelik: 2000 TL)" şeklinde gelirse sadece "1" kısmını ayıklar
+            if (odaNo != null && odaNo.contains(" ")) {
+                odaNo = odaNo.split(" ")[0];
+            }
+
             LocalDate baslangic = LocalDate.parse(basTarih);
             LocalDate bitis = LocalDate.parse(bitTarih);
 
@@ -110,18 +168,22 @@ public class OtelYonetimi {
                 return "Hata: " + odaNo + " numaralı bir oda sistemde bulunmuyor!";
             }
 
-            // Kapasite kontrolü artık tamamen ağaçtaki tarihlere bakarak (musaitMi) yapılıyor
             if (talepEdilenOda.musaitMi(baslangic, bitis)) {
-                // DÜZELTME 1: talepEdilenOda.odaNo yerine .getOdaNo() kullanıldı
                 Rezervasyon yeniRezervasyon = new Rezervasyon(musteri, talepEdilenOda.getOdaNo(), baslangic, bitis);
-
                 talepEdilenOda.rezervasyonEkle(yeniRezervasyon);
+
+                // TOPLAM FATURA HESAPLAMA MANTIĞI (BONUS)
+                long gunSayisi = ChronoUnit.DAYS.between(baslangic, bitis);
+                if (gunSayisi <= 0) gunSayisi = 1; // Aynı gün çıkış toleransı
+                long toplamTutar = gunSayisi * talepEdilenOda.getGunlukFiyat();
+
                 save();
-                return "Başarılı: " + odaNo + " numaralı odaya rezervasyon yapıldı.";
+                return "Başarılı: " + ad + " adına " + odaNo + " nolu odaya kayıt yapıldı.\n" +
+                        "💰 Gecelik: " + talepEdilenOda.getGunlukFiyat() + " TL | Süre: " + gunSayisi + " Gün | Toplam Fatura: " + toplamTutar + " TL";
             } else {
-                beklemeListesi.kuyrugaEkle(musteri);
+                beklemeListesi.kuyrugaEkle(musteri, odaNo, baslangic, bitis);
                 save();
-                return "Uyarı: Oda belirtilen tarihlerde tam kapasite dolu! Müşteri bekleme listesine eklendi.";
+                return "Uyarı: Oda dolu! " + ad + " bekleme listesine eklendi.";
             }
         } catch (DateTimeParseException e) {
             return "Hata: Lütfen tarihleri YYYY-MM-DD formatında giriniz.";
@@ -131,13 +193,15 @@ public class OtelYonetimi {
     }
 
     public String cikisYap(String odaNo, String tc) {
+        if (odaNo != null && odaNo.contains(" ")) {
+            odaNo = odaNo.split(" ")[0];
+        }
+
         Oda oda = odalar.get(odaNo);
         if (oda == null) return "Hata: '" + odaNo + "' numaralı oda bulunamadı!";
 
         Rezervasyon iptalEdilecek = null;
-        // DÜZELTME 2: oda.aktifRezervasyonlar yerine .getAktifRezervasyonlar() kullanıldı
         for (Rezervasyon rez : oda.getAktifRezervasyonlar()) {
-            // DÜZELTME 3: rez.musteri.tcNo yerine .getMusteri().getTcNo() kullanıldı
             if (rez.getMusteri().getTcNo().equals(tc)) {
                 iptalEdilecek = rez;
                 break;
@@ -146,10 +210,18 @@ public class OtelYonetimi {
 
         if (iptalEdilecek != null) {
             oda.rezervasyonSil(iptalEdilecek);
-            // DÜZELTME 4: iptalEdilecek.bitisTarihi yerine .getBitisTarihi() kullanıldı
             tamamlananRezervasyonlar.put(iptalEdilecek.getBitisTarihi(), iptalEdilecek);
+
+            Rezervasyon siradakiUygun = beklemeListesi.siradakiUygunTalebiAl(oda);
+            String ekMesaj = "";
+            if (siradakiUygun != null) {
+                oda.rezervasyonEkle(siradakiUygun);
+                ekMesaj = "\n🔔 SİSTEM NOTU: Oda boşaldığı için bekleme listesindeki '" +
+                        siradakiUygun.getMusteri().getAdSoyad() + "' otomatik olarak bu odaya yerleştirildi!";
+            }
+
             save();
-            return "Çıkış başarılı. Kayıt arşive aktarıldı.";
+            return "Çıkış başarılı. Kayıt arşive aktarıldı." + ekMesaj;
         } else {
             return "Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.";
         }
@@ -173,16 +245,16 @@ public class OtelYonetimi {
         return sb.toString();
     }
 
-    private void odaEkle() {
-        for (int i = 1; i <= 25; i++) {
-            String odaNo = String.valueOf(i);
-            int kapasite = (i % 5 == 0) ? 4 : (i % 2 == 0 ? 3 : 2);
-            odalar.put(odaNo, new Oda(odaNo, kapasite));
-        }
+    public int getTümZamanlarKayitliMusteri() {
+        return musteriler.size();
     }
 
-    public int getAktifMusteriSayisi() {
-        return musteriler.size();
+    public int getAktifKonaklayanSayisi() {
+        int toplam = 0;
+        for (Oda oda : odalar.values()) {
+            toplam += oda.getAktifRezervasyonlar().size();
+        }
+        return toplam;
     }
 
     public int getTamamlananRezervasyonSayisi() {

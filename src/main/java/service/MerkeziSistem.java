@@ -26,33 +26,41 @@ public class MerkeziSistem {
 
     // --- HATAYI ÇÖZEN KISIM BURASI ---
     // Artık 'void' değil, JavaFX arayüzünde göstermek için 'String' döndürüyor!
+    // ... (Dosyanın üst kısımları aynı) ...
+
     public String merkeziRaporOlustur() {
         StringBuilder rapor = new StringBuilder();
         rapor.append("=========================================\n");
         rapor.append("      OTEL ZİNCİRİ MERKEZİ RAPORU        \n");
         rapor.append("=========================================\n\n");
 
-        int toplamAktifMusteri = 0;
-        int toplamGecmisRezervasyon = 0;
+        int genelKayitli = 0;
+        int genelAktif = 0;
+        int genelArsiv = 0;
 
         for (Map.Entry<String, OtelYonetimi> entry : subeler.entrySet()) {
             String subeAdi = entry.getKey();
             OtelYonetimi sube = entry.getValue();
 
-            int subeAktif = sube.getAktifMusteriSayisi();
-            int subeGecmis = sube.getTamamlananRezervasyonSayisi();
+            int kayitli = sube.getTümZamanlarKayitliMusteri();
+            int aktif = sube.getAktifKonaklayanSayisi();
+            int arsiv = sube.getTamamlananRezervasyonSayisi();
 
-            toplamAktifMusteri += subeAktif;
-            toplamGecmisRezervasyon += subeGecmis;
+            genelKayitli += kayitli;
+            genelAktif += aktif;
+            genelArsiv += arsiv;
 
             rapor.append("📍 Şube: ").append(subeAdi).append("\n");
-            rapor.append("  -> Toplam Kayıtlı Müşteri: ").append(subeAktif).append("\n");
-            rapor.append("  -> Arşivdeki (Geçmiş) İşlem: ").append(subeGecmis).append("\n");
+            rapor.append("  -> Tüm Zamanlarda Kayıtlı Müşteri: ").append(kayitli).append("\n");
+            rapor.append("  -> Aktif Konaklayan Müşteri: ").append(aktif).append("\n");
+            rapor.append("  -> Arşivdeki (Geçmiş) İşlem Sayısı: ").append(arsiv).append("\n");
             rapor.append("-----------------------------------------\n");
         }
 
-        rapor.append("\n📊 GENEL TOPLAM KAYITLI MÜŞTERİ: ").append(toplamAktifMusteri).append("\n");
-        rapor.append("📊 GENEL TOPLAM ARŞİV KAYDI: ").append(toplamGecmisRezervasyon).append("\n");
+        rapor.append("\n📊 GENEL ZİNCİR ÖZETİ:\n");
+        rapor.append("Toplam Sistemdeki Müşteri Hesabı: ").append(genelKayitli).append("\n");
+        rapor.append("Şu An Aktif Kalan Toplam Müşteri: ").append(genelAktif).append("\n");
+        rapor.append("Bugüne Kadar Tamamlanan Rezervasyon: ").append(genelArsiv).append("\n");
         rapor.append("=========================================\n");
 
         return rapor.toString();

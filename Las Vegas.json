@@ -1,182 +1,103 @@
 {
   "musteriler": {},
-  "arsiv": {},
   "odalar": {
-    "22": {
-      "odaNo": "22",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "23": {
-      "odaNo": "23",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "24": {
-      "odaNo": "24",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "25": {
-      "odaNo": "25",
-      "kapasite": 4,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "10": {
-      "odaNo": "10",
-      "kapasite": 4,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "11": {
-      "odaNo": "11",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "12": {
-      "odaNo": "12",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "13": {
-      "odaNo": "13",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "14": {
-      "odaNo": "14",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "15": {
-      "odaNo": "15",
-      "kapasite": 4,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "16": {
-      "odaNo": "16",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "17": {
-      "odaNo": "17",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "18": {
-      "odaNo": "18",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
-    "19": {
-      "odaNo": "19",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
-    },
     "1": {
       "odaNo": "1",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 1,
+      "gunlukFiyat": 1900,
+      "aktifRezervasyonlar": []
     },
     "2": {
       "odaNo": "2",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 1,
+      "gunlukFiyat": 1900,
+      "aktifRezervasyonlar": []
     },
     "3": {
       "odaNo": "3",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 1,
+      "gunlukFiyat": 1900,
+      "aktifRezervasyonlar": []
     },
     "4": {
       "odaNo": "4",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 1,
+      "gunlukFiyat": 1900,
+      "aktifRezervasyonlar": []
     },
     "5": {
       "odaNo": "5",
-      "kapasite": 4,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 2,
+      "gunlukFiyat": 2800,
+      "aktifRezervasyonlar": []
     },
     "6": {
       "odaNo": "6",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 2,
+      "gunlukFiyat": 2800,
+      "aktifRezervasyonlar": []
     },
     "7": {
       "odaNo": "7",
       "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "gunlukFiyat": 2800,
+      "aktifRezervasyonlar": []
     },
     "8": {
       "odaNo": "8",
-      "kapasite": 3,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 2,
+      "gunlukFiyat": 2800,
+      "aktifRezervasyonlar": []
     },
     "9": {
       "odaNo": "9",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "kapasite": 3,
+      "gunlukFiyat": 3800,
+      "aktifRezervasyonlar": []
     },
-    "20": {
-      "odaNo": "20",
+    "10": {
+      "odaNo": "10",
+      "kapasite": 3,
+      "gunlukFiyat": 3800,
+      "aktifRezervasyonlar": []
+    },
+    "11": {
+      "odaNo": "11",
+      "kapasite": 3,
+      "gunlukFiyat": 3800,
+      "aktifRezervasyonlar": []
+    },
+    "12": {
+      "odaNo": "12",
+      "kapasite": 3,
+      "gunlukFiyat": 3800,
+      "aktifRezervasyonlar": []
+    },
+    "13": {
+      "odaNo": "13",
       "kapasite": 4,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+      "gunlukFiyat": 4800,
+      "aktifRezervasyonlar": []
     },
-    "21": {
-      "odaNo": "21",
-      "kapasite": 2,
-      "mevcutKisiSayisi": 0,
-      "aktifRezervasyonlar": [],
-      "agac": {}
+    "14": {
+      "odaNo": "14",
+      "kapasite": 4,
+      "gunlukFiyat": 4800,
+      "aktifRezervasyonlar": []
+    },
+    "15": {
+      "odaNo": "15",
+      "kapasite": 4,
+      "gunlukFiyat": 4800,
+      "aktifRezervasyonlar": []
+    },
+    "16": {
+      "odaNo": "16",
+      "kapasite": 4,
+      "gunlukFiyat": 4800,
+      "aktifRezervasyonlar": []
     }
   },
-  "beklemeListesi": {}
+  "beklemeListesi": {},
+  "arsiv": {}
 }

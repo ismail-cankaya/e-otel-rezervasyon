@@ -1,177 +1,103 @@
 {
-  "musteriler": {
-    "12345678910": {
-      "tcNo": "12345678910",
-      "adSoyad": "denizk"
-    },
-    "23987937212": {
-      "tcNo": "23987937212",
-      "adSoyad": "adnan"
-    },
-    "12345465493": {
-      "tcNo": "12345465493",
-      "adSoyad": "ahmet"
-    }
-  },
+  "musteriler": {},
   "odalar": {
     "1": {
       "odaNo": "1",
-      "kapasite": 2,
-      "aktifRezervasyonlar": [
-        {
-          "musteri": {
-            "tcNo": "12345678910",
-            "adSoyad": "denizk"
-          },
-          "odaNo": "1",
-          "baslangicTarihi": "2026-05-14",
-          "bitisTarihi": "2026-05-15"
-        },
-        {
-          "musteri": {
-            "tcNo": "23987937212",
-            "adSoyad": "adnan"
-          },
-          "odaNo": "1",
-          "baslangicTarihi": "2026-05-14",
-          "bitisTarihi": "2026-05-15"
-        }
-      ]
+      "kapasite": 1,
+      "gunlukFiyat": 1200,
+      "aktifRezervasyonlar": []
     },
     "2": {
       "odaNo": "2",
-      "kapasite": 3,
+      "kapasite": 1,
+      "gunlukFiyat": 1200,
       "aktifRezervasyonlar": []
     },
     "3": {
       "odaNo": "3",
-      "kapasite": 2,
+      "kapasite": 1,
+      "gunlukFiyat": 1200,
       "aktifRezervasyonlar": []
     },
     "4": {
       "odaNo": "4",
-      "kapasite": 3,
+      "kapasite": 1,
+      "gunlukFiyat": 1200,
       "aktifRezervasyonlar": []
     },
     "5": {
       "odaNo": "5",
-      "kapasite": 4,
+      "kapasite": 2,
+      "gunlukFiyat": 1800,
       "aktifRezervasyonlar": []
     },
     "6": {
       "odaNo": "6",
-      "kapasite": 3,
+      "kapasite": 2,
+      "gunlukFiyat": 1800,
       "aktifRezervasyonlar": []
     },
     "7": {
       "odaNo": "7",
       "kapasite": 2,
+      "gunlukFiyat": 1800,
       "aktifRezervasyonlar": []
     },
     "8": {
       "odaNo": "8",
-      "kapasite": 3,
+      "kapasite": 2,
+      "gunlukFiyat": 1800,
       "aktifRezervasyonlar": []
     },
     "9": {
       "odaNo": "9",
-      "kapasite": 2,
+      "kapasite": 3,
+      "gunlukFiyat": 2400,
       "aktifRezervasyonlar": []
     },
     "10": {
       "odaNo": "10",
-      "kapasite": 4,
+      "kapasite": 3,
+      "gunlukFiyat": 2400,
       "aktifRezervasyonlar": []
     },
     "11": {
       "odaNo": "11",
-      "kapasite": 2,
+      "kapasite": 3,
+      "gunlukFiyat": 2400,
       "aktifRezervasyonlar": []
     },
     "12": {
       "odaNo": "12",
       "kapasite": 3,
+      "gunlukFiyat": 2400,
       "aktifRezervasyonlar": []
     },
     "13": {
       "odaNo": "13",
-      "kapasite": 2,
+      "kapasite": 4,
+      "gunlukFiyat": 3200,
       "aktifRezervasyonlar": []
     },
     "14": {
       "odaNo": "14",
-      "kapasite": 3,
+      "kapasite": 4,
+      "gunlukFiyat": 3200,
       "aktifRezervasyonlar": []
     },
     "15": {
       "odaNo": "15",
       "kapasite": 4,
+      "gunlukFiyat": 3200,
       "aktifRezervasyonlar": []
     },
     "16": {
       "odaNo": "16",
-      "kapasite": 3,
-      "aktifRezervasyonlar": []
-    },
-    "17": {
-      "odaNo": "17",
-      "kapasite": 2,
-      "aktifRezervasyonlar": []
-    },
-    "18": {
-      "odaNo": "18",
-      "kapasite": 3,
-      "aktifRezervasyonlar": []
-    },
-    "19": {
-      "odaNo": "19",
-      "kapasite": 2,
-      "aktifRezervasyonlar": []
-    },
-    "20": {
-      "odaNo": "20",
       "kapasite": 4,
-      "aktifRezervasyonlar": []
-    },
-    "21": {
-      "odaNo": "21",
-      "kapasite": 2,
-      "aktifRezervasyonlar": []
-    },
-    "22": {
-      "odaNo": "22",
-      "kapasite": 3,
-      "aktifRezervasyonlar": []
-    },
-    "23": {
-      "odaNo": "23",
-      "kapasite": 2,
-      "aktifRezervasyonlar": []
-    },
-    "24": {
-      "odaNo": "24",
-      "kapasite": 3,
-      "aktifRezervasyonlar": []
-    },
-    "25": {
-      "odaNo": "25",
-      "kapasite": 4,
+      "gunlukFiyat": 3200,
       "aktifRezervasyonlar": []
     }
   },
-  "beklemeListesi": {
-    "bas": {
-      "musteri": {
-        "tcNo": "12345465493",
-        "adSoyad": "ahmet"
-      }
-    },
-    "son": {
-      "musteri": {
-        "tcNo": "12345465493",
-        "adSoyad": "ahmet"
-      }
-    }
-  },
+  "beklemeListesi": {},
   "arsiv": {}
 }
