@@ -23,7 +23,7 @@ public class Musteri implements Serializable {
         return adSoyad;
     }
 
-    // (Opsiyonel) Dışarıdan veriyi değiştirmek gerekirse diye Setter metotları eklendi
+    // Dışarıdan veriyi değiştirmek gerekirse diye Setter metotları eklendi
     public void setTcNo(String tcNo) {
         this.tcNo = tcNo;
     }

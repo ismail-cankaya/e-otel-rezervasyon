@@ -55,7 +55,6 @@ public class Rezervasyon implements Serializable {
 
     @Override
     public String toString() {
-        // 2. ÖNEMLİ DÜZELTME: musteri.adSoyad yerine musteri.getAdSoyad() kullanıldı!
         return "Müşteri: " + musteri.getAdSoyad() + " | Oda: " + odaNo + " | Tarih: " + baslangicTarihi + " -> " + bitisTarihi;
     }
 }

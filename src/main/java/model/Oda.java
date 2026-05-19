@@ -1,6 +1,6 @@
 package model;
 
-import util.AralikAgaci; // YENİ: Ağacı oluşturduğumuz util paketinden çağırıyoruz
+import util.AralikAgaci;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ public class Oda implements Serializable {
 
     private String odaNo;
     private int kapasite;
-    private int gunlukFiyat; // YENİ: Odanın gecelik fiyatı
+    private int gunlukFiyat; // Odanın gecelik fiyatı
     private List<Rezervasyon> aktifRezervasyonlar;
 
     private transient AralikAgaci agac;

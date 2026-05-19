@@ -269,7 +269,7 @@ public class OtelYonetimi {
         return toplam;
     }
 
-    // AÇIK KAPATILDI: Akıllı Hasılat Algoritması (Çifte Fatura Kesmeyi Önler)
+    //  Akıllı Hasılat Algoritması (Çifte Fatura Kesmeyi Önler)
     public long getToplamHasilat() {
         long toplamKasa = 0;
         // Oda bazlı faturalandırılmış günleri tutmak için bir harita
@@ -288,7 +288,7 @@ public class OtelYonetimi {
 
                 // Müşterinin kaldığı her günü tek tek kontrol et
                 for (LocalDate tarih = bas; tarih.isBefore(bit); tarih = tarih.plusDays(1)) {
-                    // Eğer bu gün, bu oda için daha önce kasaya EKLENMEDİYSE ekle
+                    // Eğer bu gün, bu oda için daha önce kasaya eklenmediyse ekle
                     if (!odaninGunleri.contains(tarih)) {
                         odaninGunleri.add(tarih);
                         toplamKasa += oda.getGunlukFiyat(); // Kasaya ekle
@@ -331,11 +331,10 @@ public class OtelYonetimi {
     }
 
     /*
-      HashMap (O(1)) kullanarak TC kimlik numarasına göre müşteriyi anında bulur.
+      HashMap TC kimlik numarasına göre müşteriyi anında bulur.
      Geçmişte kalmış veya şu an kalan fark etmeksizin durumu raporlar.
      */
     public String tcIleMusteriSorgula(String tc) {
-        // 1. HashMap sayesinde O(1) sürede müşteriyi buluyoruz
         Musteri m = musteriler.get(tc);
 
         if (m == null) {

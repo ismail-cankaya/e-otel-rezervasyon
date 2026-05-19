@@ -7,7 +7,6 @@ import java.time.LocalDate;
 // --- INTERVAL TREE (ARALIK AĞACI) ---
 public class AralikAgaci implements Serializable {
 
-    // Node (Düğüm) sınıfını dış dünyadan gizliyoruz (Encapsulation)
     private static class AralikAgaciDugumu implements Serializable {
         Rezervasyon rez;
         LocalDate maxBitis;

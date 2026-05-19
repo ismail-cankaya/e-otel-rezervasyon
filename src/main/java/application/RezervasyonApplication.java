@@ -17,7 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import service.MerkeziSistem; // YENİ EKLENDİ
+import service.MerkeziSistem;
 
 /**
  * E-Otel Yönetim Sistemi Ana Arayüz (GUI) Sınıfı
@@ -31,9 +31,7 @@ import service.MerkeziSistem; // YENİ EKLENDİ
  */
 public class RezervasyonApplication extends Application {
 
-    // YENİ: Artık tek bir otel değil, merkezi sistemi çağırıyoruz
     private MerkeziSistem merkez;
-    // YENİ: Hangi şubede işlem yapıldığını global olarak tutacak ComboBox
     private ComboBox<String> cmbAktifSube;
 
     @Override
@@ -84,7 +82,7 @@ public class RezervasyonApplication extends Application {
     }
 
     private VBox createRezervasyonFormu() {
-        // Başlığı tek başına düzgünce ortalıyoruz
+
         Label lblBaslik = new Label("Yeni Rezervasyon & Oda Arama");
         lblBaslik.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         lblBaslik.setMaxWidth(Double.MAX_VALUE);
@@ -170,7 +168,7 @@ public class RezervasyonApplication extends Application {
         Button btnTemizle = new Button("Çıkış / Temizle");
         btnTemizle.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
 
-        // YENİ: İki butonun arasını tamamen açacak esnek boşluk elemanı
+        // İki butonun arasını tamamen açacak esnek boşluk elemanı
         javafx.scene.layout.Region yay = new javafx.scene.layout.Region();
         HBox.setHgrow(yay, Priority.ALWAYS);
 
@@ -301,17 +299,17 @@ public class RezervasyonApplication extends Application {
         btnGecmis.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
         btnGecmis.setMaxWidth(Double.MAX_VALUE);
 
-        // YENİ: Aktif konaklayanları gösteren buton
+        // Aktif konaklayanları gösteren buton
         Button btnAktifKalanlar = new Button("İçeridekiler (Aktif)");
         btnAktifKalanlar.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
         btnAktifKalanlar.setMaxWidth(Double.MAX_VALUE);
 
-        // YENİ: Merkez rapor butonu
+        // Merkez rapor butonu
         Button btnMerkezRapor = new Button("Merkezi Zincir Raporu");
         btnMerkezRapor.setStyle("-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
         btnMerkezRapor.setMaxWidth(Double.MAX_VALUE);
 
-        // --- YENİ: TC İLE SORGULAMA ALANI ---
+        // TC İLE SORGULAMA ALANI ---
         HBox tcSorguKutusu = new HBox(10);
         tcSorguKutusu.setAlignment(Pos.CENTER_LEFT);
         tcSorguKutusu.setStyle("-fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-color: #ecf0f1;");
@@ -354,7 +352,7 @@ public class RezervasyonApplication extends Application {
             txtSonuc.setText("--- " + aktifSube + " Şubesi Arşivlenmiş Müşteri Kayıtları ---\n\n" + tabloGorunumuYap(hamVeri));
         });
 
-        // YENİ METOT: Aktif Konaklayanları Listele
+        // Aktif Konaklayanları Listele
         btnAktifKalanlar.setOnAction(e -> {
             String aktifSube = cmbAktifSube.getValue();
             String veri = merkez.subeGetir(aktifSube).aktifKonaklayanlariGoster();
@@ -366,7 +364,7 @@ public class RezervasyonApplication extends Application {
             txtSonuc.setText(rapor);
         });
 
-        // YENİ METOT: TC ile Müşteri Sorgula
+        // TC ile Müşteri Sorgula
         btnTCSorgula.setOnAction(e -> {
             String tc = txtTCSorgu.getText().trim();
             if(tc.isEmpty()) {
