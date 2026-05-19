@@ -320,7 +320,7 @@ public class RezervasyonApplication extends Application {
         txtTCSorgu.setPromptText("Sorgulanacak TC No");
         txtTCSorgu.setStyle("-fx-background-radius: 5;");
 
-        Button btnTCSorgula = new Button("Müşteri Ara (O(1))");
+        Button btnTCSorgula = new Button("Müşteri Ara");
         btnTCSorgula.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
 
         tcSorguKutusu.getChildren().addAll(new Label("TC ile Arama: "), txtTCSorgu, btnTCSorgula);

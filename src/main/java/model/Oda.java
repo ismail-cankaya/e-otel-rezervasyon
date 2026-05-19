@@ -16,7 +16,7 @@ public class Oda implements Serializable {
 
     private transient AralikAgaci agac;
 
-    // Kurucu metot güncellendi (Fiyat parametresi eklendi)
+    // Kurucu metot
     public Oda(String odaNo, int kapasite, int gunlukFiyat) {
         this.odaNo = odaNo;
         this.kapasite = kapasite;
@@ -84,7 +84,7 @@ public class Oda implements Serializable {
         return oTarihtekiKisiSayisi < kapasite;
     }
 
-    // YENİ EKLENEN METOT: O tarihlerde odada kaç kişi olduğunu döndürür
+    //  Belirli tarihlerde odada kaç kişi olduğunu döndürür.
     public int getTarihtekiKisiSayisi(LocalDate baslangic, LocalDate bitis) {
         return agac.cakisanSayisiniBul(baslangic, bitis);
     }

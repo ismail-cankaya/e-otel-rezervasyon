@@ -38,7 +38,7 @@ public class OtelYonetimi {
     private Map<String, Oda> odalar = new LinkedHashMap<>();
 
     private BeklemeListesi beklemeListesi = new BeklemeListesi();
-    // AÇIK KAPATILDI: Arşiv artık silinmemesi için List (Liste) yapısına geçirildi
+    // Arşiv artık silinmemesi için List (Liste) yapısına geçirdik.
     private List<Rezervasyon> tamamlananRezervasyonlar = new ArrayList<>();
 
     private final String DOSYA_ADI;
@@ -84,7 +84,7 @@ public class OtelYonetimi {
             Type odalarType = new TypeToken<LinkedHashMap<String, Oda>>(){}.getType();
             odalar = gson.fromJson(jsonObject.get("odalar"), odalarType);
 
-            // AÇIK KAPATILDI: JSON'dan List olarak okunuyor
+            // JSON'dan List olarak okunuyor
             Type arsivType = new TypeToken<ArrayList<Rezervasyon>>(){}.getType();
             tamamlananRezervasyonlar = gson.fromJson(jsonObject.get("arsiv"), arsivType);
 
@@ -214,13 +214,12 @@ public class OtelYonetimi {
 
         if (iptalEdilecek != null) {
             oda.rezervasyonSil(iptalEdilecek);
-            // AÇIK KAPATILDI: Artık List'e ekleniyor, kimse kimseyi ezmiyor
             tamamlananRezervasyonlar.add(iptalEdilecek);
 
             Rezervasyon siradakiUygun = beklemeListesi.siradakiUygunTalebiAl(oda);
             String ekMesaj = "";
             if (siradakiUygun != null) {
-                // YENİ KONTROL: Bekleme listesindeki kişi, odanın GÜNCEL kapasitesine uyuyor mu?
+                // Bekleme listesindeki kişi, odanın güncel kapasitesine uyuyor mu?
                 if (oda.musaitMi(siradakiUygun.getBaslangicTarihi(), siradakiUygun.getBitisTarihi())) {
                     oda.rezervasyonEkle(siradakiUygun);
                     ekMesaj = "\n  SİSTEM NOTU: Oda boşaldığı için bekleme listesindeki '" +
@@ -252,7 +251,6 @@ public class OtelYonetimi {
             return "Arşivde hiç kayıt yok.";
         }
         StringBuilder sb = new StringBuilder();
-        // AÇIK KAPATILDI: Döngü yapısı List'e göre düzenlendi
         for (Rezervasyon rez : tamamlananRezervasyonlar) {
             sb.append("Çıkış Tarihi: ").append(rez.getBitisTarihi()).append(" | Detay: ").append(rez).append("\n");
         }
