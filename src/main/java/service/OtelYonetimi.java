@@ -234,7 +234,7 @@ public class OtelYonetimi {
             save();
             return "Çıkış başarılı. Kayıt arşive aktarıldı." + ekMesaj;
         } else {
-            // NOT: Zaten bir kere çıkış yapan kişiye tekrar çıkış yapmaya basarsan kod bu hataya düşer, güvenlidir.
+            // Zaten bir kere çıkış yapan kişiye tekrar çıkış yapmaya basarsan kod bu hataya düşer, güvenlidir.
             return "Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.";
         }
     }

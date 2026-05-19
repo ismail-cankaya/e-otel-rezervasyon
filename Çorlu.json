@@ -3,6 +3,14 @@
     "11111111111": {
       "tcNo": "11111111111",
       "adSoyad": "deniz k"
+    },
+    "11111111112": {
+      "tcNo": "11111111112",
+      "adSoyad": "ahmet o"
+    },
+    "11111111117": {
+      "tcNo": "11111111117",
+      "adSoyad": "deniz a"
     }
   },
   "odalar": {
@@ -114,5 +122,33 @@
     }
   },
   "beklemeListesi": {},
-  "arsiv": []
+  "arsiv": [
+    {
+      "musteri": {
+        "tcNo": "11111111111",
+        "adSoyad": "deniz k"
+      },
+      "odaNo": "5",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-23"
+    },
+    {
+      "musteri": {
+        "tcNo": "11111111112",
+        "adSoyad": "ahmet o"
+      },
+      "odaNo": "5",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-23"
+    },
+    {
+      "musteri": {
+        "tcNo": "11111111117",
+        "adSoyad": "deniz a"
+      },
+      "odaNo": "5",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-23"
+    }
+  ]
 }
