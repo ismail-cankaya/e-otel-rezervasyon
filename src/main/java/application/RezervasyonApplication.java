@@ -66,7 +66,7 @@ public class RezervasyonApplication extends Application {
         VBox root = new VBox(topBox, tabPane);
         VBox.setVgrow(tabPane, Priority.ALWAYS);
 
-        Scene scene = new Scene(root, 400, 500);
+        Scene scene = new Scene(root, 400, 520);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
