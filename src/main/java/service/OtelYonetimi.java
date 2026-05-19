@@ -31,14 +31,14 @@ import model.BeklemeListesi;
 import model.Musteri;
 import model.Oda;
 import model.Rezervasyon;
+import util.KronolojikRezervasyonAgaci;
 
 public class OtelYonetimi {
 
     private Map<String, Musteri> musteriler = new LinkedHashMap<>();
     private Map<String, Oda> odalar = new LinkedHashMap<>();
-
     private BeklemeListesi beklemeListesi = new BeklemeListesi();
-    private List<Rezervasyon> tamamlananRezervasyonlar = new ArrayList<>();
+    private transient KronolojikRezervasyonAgaci tamamlananRezervasyonlar = new KronolojikRezervasyonAgaci();
 
     private final String DOSYA_ADI;
     private final Gson gson;
@@ -59,7 +59,10 @@ public class OtelYonetimi {
             tumVeri.put("musteriler", musteriler);
             tumVeri.put("odalar", odalar);
             tumVeri.put("beklemeListesi", beklemeListesi);
-            tumVeri.put("arsiv", tamamlananRezervasyonlar);
+
+            // YENİ: BST Ağacını JSON'a kaydederken düz liste (toList) olarak veriyoruz ki Gson sorunsuz yazsın
+            tumVeri.put("arsiv", tamamlananRezervasyonlar.toList());
+
             gson.toJson(tumVeri, writer);
         } catch (IOException e) {
             System.out.println("Kayıt Hatası: " + e.getMessage());
@@ -83,12 +86,17 @@ public class OtelYonetimi {
             Type odalarType = new TypeToken<LinkedHashMap<String, Oda>>(){}.getType();
             odalar = gson.fromJson(jsonObject.get("odalar"), odalarType);
 
-            // JSON'dan List olarak okunuyor
             Type arsivType = new TypeToken<ArrayList<Rezervasyon>>(){}.getType();
-            tamamlananRezervasyonlar = gson.fromJson(jsonObject.get("arsiv"), arsivType);
+            List<Rezervasyon> geciciArsivListesi = gson.fromJson(jsonObject.get("arsiv"), arsivType);
+
+            tamamlananRezervasyonlar = new KronolojikRezervasyonAgaci(); // Ağacı sıfırla
+            if (geciciArsivListesi != null) {
+                for (Rezervasyon rez : geciciArsivListesi) {
+                    tamamlananRezervasyonlar.ekle(rez); // Ağaca ekle
+                }
+            }
 
             if (musteriler == null) musteriler = new LinkedHashMap<>();
-            if (tamamlananRezervasyonlar == null) tamamlananRezervasyonlar = new ArrayList<>();
 
             if (odalar == null) {
                 odalar = new LinkedHashMap<>();
@@ -222,18 +230,17 @@ public class OtelYonetimi {
 
         if (iptalEdilecek != null) {
             oda.rezervasyonSil(iptalEdilecek);
-            tamamlananRezervasyonlar.add(iptalEdilecek);
+
+            tamamlananRezervasyonlar.ekle(iptalEdilecek);
 
             Rezervasyon siradakiUygun = beklemeListesi.siradakiUygunTalebiAl(oda);
             String ekMesaj = "";
             if (siradakiUygun != null) {
-                // Bekleme listesindeki kişi, odanın güncel kapasitesine uyuyor mu?
                 if (oda.musaitMi(siradakiUygun.getBaslangicTarihi(), siradakiUygun.getBitisTarihi())) {
                     oda.rezervasyonEkle(siradakiUygun);
                     ekMesaj = "\n  SİSTEM NOTU: Oda boşaldığı için bekleme listesindeki '" +
                             siradakiUygun.getMusteri().getAdSoyad() + "' otomatik olarak bu odaya yerleştirildi!";
                 } else {
-                    // Hala sığmıyorsa, sırasını kaybetmemesi için kuyruğa geri koyuyoruz
                     beklemeListesi.kuyrugaEkle(siradakiUygun.getMusteri(), oda.getOdaNo(),
                             siradakiUygun.getBaslangicTarihi(), siradakiUygun.getBitisTarihi());
                 }
@@ -242,7 +249,6 @@ public class OtelYonetimi {
             save();
             return "Çıkış başarılı. Kayıt arşive aktarıldı." + ekMesaj;
         } else {
-            // Zaten bir kere çıkış yapan kişiye tekrar çıkış yapmaya basarsan kod bu hataya düşer, güvenlidir.
             return "Hata: Bu odada bu TC ile kayıtlı aktif bir rezervasyon yok.";
         }
     }
@@ -255,11 +261,13 @@ public class OtelYonetimi {
     }
 
     public String gecmisRezervasyonlariGoster() {
-        if (tamamlananRezervasyonlar == null || tamamlananRezervasyonlar.isEmpty()) {
+        List<Rezervasyon> kronolojikListe = tamamlananRezervasyonlar.toList(); // YENİ: Ağaçtan sıralı listeyi çek
+
+        if (kronolojikListe == null || kronolojikListe.isEmpty()) {
             return "Arşivde hiç kayıt yok.";
         }
         StringBuilder sb = new StringBuilder();
-        for (Rezervasyon rez : tamamlananRezervasyonlar) {
+        for (Rezervasyon rez : kronolojikListe) { // YENİ: Sıralı liste üzerinde dön
             sb.append("Çıkış Tarihi: ").append(rez.getBitisTarihi()).append(" | Detay: ").append(rez).append("\n");
         }
         return sb.toString();
@@ -277,13 +285,12 @@ public class OtelYonetimi {
         return toplam;
     }
 
-    //  Akıllı Hasılat Algoritması (Çifte Fatura Kesmeyi Önler)
     public long getToplamHasilat() {
         long toplamKasa = 0;
-        // Oda bazlı faturalandırılmış günleri tutmak için bir harita
         Map<String, Set<LocalDate>> faturalananGunler = new HashMap<>();
 
-        for (Rezervasyon rez : tamamlananRezervasyonlar) {
+        // YENİ: Doğrudan ağacın sıralı listesi (toList) üzerinden dönüyoruz
+        for (Rezervasyon rez : tamamlananRezervasyonlar.toList()) {
             String odaNo = rez.getOdaNo();
             Oda oda = odalar.get(odaNo);
 
@@ -294,16 +301,13 @@ public class OtelYonetimi {
                 LocalDate bas = rez.getBaslangicTarihi();
                 LocalDate bit = rez.getBitisTarihi();
 
-                // Müşterinin kaldığı her günü tek tek kontrol et
                 for (LocalDate tarih = bas; tarih.isBefore(bit); tarih = tarih.plusDays(1)) {
-                    // Eğer bu gün, bu oda için daha önce kasaya eklenmediyse ekle
                     if (!odaninGunleri.contains(tarih)) {
                         odaninGunleri.add(tarih);
-                        toplamKasa += oda.getGunlukFiyat(); // Kasaya ekle
+                        toplamKasa += oda.getGunlukFiyat();
                     }
                 }
 
-                // Günübirlik konaklamaları da güvence altına alıyoruz
                 if (bas.isEqual(bit) && !odaninGunleri.contains(bas)) {
                     odaninGunleri.add(bas);
                     toplamKasa += oda.getGunlukFiyat();
@@ -312,9 +316,7 @@ public class OtelYonetimi {
         }
         return toplamKasa;
     }
-    /*
-     Otelde o an aktif olarak konaklayan tüm müşterileri, TC ve Oda bilgileriyle listeler.
-     */
+
     public String aktifKonaklayanlariGoster() {
         StringBuilder sb = new StringBuilder();
         boolean musteriVar = false;
@@ -338,10 +340,6 @@ public class OtelYonetimi {
         return sb.toString();
     }
 
-    /*
-      HashMap TC kimlik numarasına göre müşteriyi anında bulur.
-     Geçmişte kalmış veya şu an kalan fark etmeksizin durumu raporlar.
-     */
     public String tcIleMusteriSorgula(String tc) {
         Musteri m = musteriler.get(tc);
 
@@ -349,7 +347,6 @@ public class OtelYonetimi {
             return "Sonuç: Sistemde bu TC (" + tc + ") ile kayıtlı hiçbir müşteri yok.";
         }
 
-        // 2. Müşteri sistemde var, acaba şu an otelde bir odada kalıyor mu?
         StringBuilder sb = new StringBuilder();
         boolean aktifOdasiVar = false;
 
