@@ -287,7 +287,6 @@ public class OtelYonetimi {
         long toplamKasa = 0;
         Map<String, Set<LocalDate>> faturalananGunler = new HashMap<>();
 
-        // YENİ: Doğrudan ağacın sıralı listesi (toList) üzerinden dönüyoruz
         for (Rezervasyon rez : tamamlananRezervasyonlar.toList()) {
             String odaNo = rez.getOdaNo();
             Oda oda = odalar.get(odaNo);
