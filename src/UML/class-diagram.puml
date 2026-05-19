@@ -1,0 +1,130 @@
+@startuml
+
+package application {
+  class MainLauncher {
+    +main(String[] args)
+  }
+  class RezervasyonApplication {
+    -MerkeziSistem merkez
+    -ComboBox<String> cmbAktifSube
+    +start(Stage primaryStage)
+    -createRezervasyonFormu()
+    -createCikisFormu()
+    -createRaporEkrani()
+  }
+  class RezervasyonConsole {
+    -MerkeziSistem merkeziSistem
+    -Scanner scanner
+    +RezervasyonConsole()
+    +basla()
+    -menuAna()
+    -yeniRezervasyonYap(OtelYonetimi sube)
+    -odadanCikisYap(OtelYonetimi sube)
+    -beklemeListesiniGoster(OtelYonetimi sube)
+    -gecmisRezervasyonlariGoster(OtelYonetimi sube)
+  }
+}
+
+package service {
+  class MerkeziSistem {
+    -Map<String, OtelYonetimi> subeler
+    +MerkeziSistem()
+    +subeGetir(String subeAdi)
+    +merkeziRaporOlustur()
+  }
+  class OtelYonetimi {
+    -Map<String, Musteri> musteriler
+    -Map<String, Oda> odalar
+    -BeklemeListesi beklemeListesi
+    -List<Rezervasyon> tamamlananRezervasyonlar
+    -String DOSYA_ADI
+    -Gson gson
+    +OtelYonetimi(String dosyaAdi)
+    +uygunOdalariGetir(int kisiSayisi, LocalDate bas, LocalDate bit)
+    +musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih)
+    +cikisYap(String odaNo, String tc)
+    +beklemeListesiniGoster()
+    +gecmisRezervasyonlariGoster()
+    +getTümZamanlarKayitliMusteri(): int
+    +getAktifKonaklayanSayisi(): int
+    +getToplamHasilat(): long
+    +aktifKonaklayanlariGoster(): String
+    +tcIleMusteriSorgula(String tc): String
+  }
+}
+
+package model {
+  class Musteri {
+    -String tcNo
+    -String adSoyad
+    +Musteri(String tcNo, String adSoyad)
+    +getTcNo(): String
+    +getAdSoyad(): String
+  }
+  class Rezervasyon {
+    -Musteri musteri
+    -String odaNo
+    -LocalDate baslangicTarihi
+    -LocalDate bitisTarihi
+    +Rezervasyon(Musteri musteri, String odaNo, LocalDate baslangicTarihi, LocalDate bitisTarihi)
+    +getMusteri(): Musteri
+    +getOdaNo(): String
+    +getBaslangicTarihi(): LocalDate
+    +getBitisTarihi(): LocalDate
+  }
+  class Oda {
+    -String odaNo
+    -int kapasite
+    -int gunlukFiyat
+    -List<Rezervasyon> aktifRezervasyonlar
+    -AralikAgaci agac
+    +Oda(String odaNo, int kapasite, int gunlukFiyat)
+    +rezervasyonEkle(Rezervasyon rez)
+    +rezervasyonSil(Rezervasyon rez)
+    +musaitMi(LocalDate baslangic, LocalDate bitis): boolean
+    +getTarihtekiKisiSayisi(LocalDate baslangic, LocalDate bitis): int
+    +getAktifRezervasyonlar(): List<Rezervasyon>
+    +getGunlukFiyat(): int
+    +getOdaNo(): String
+  }
+  class BeklemeListesi {
+    -Dugum bas
+    -Dugum son
+    +kuyrugaEkle(Musteri musteri, String odaNo, LocalDate baslangicTarihi, LocalDate bitisTarihi)
+    +siradakiUygunTalebiAl(Oda bosalanOda): Rezervasyon
+    +listeyiYazdir(): String
+  }
+  class BeklemeListesi::Dugum {
+    -Musteri musteri
+    -String talepEdilenOdaNo
+    -LocalDate baslangic
+    -LocalDate bitis
+    -Dugum ileri
+  }
+}
+
+package util {
+  class AralikAgaci {
+    +ekle(Rezervasyon yeniRez)
+    +cakisanSayisiniBul(LocalDate bas, LocalDate bit): int
+  }
+}
+
+MainLauncher --> RezervasyonApplication : calls
+RezervasyonApplication --> MerkeziSistem : uses
+RezervasyonConsole --> MerkeziSistem : uses
+RezervasyonConsole --> OtelYonetimi : uses
+MerkeziSistem "1" o-- "4" OtelYonetimi : subeler
+OtelYonetimi "1" o-- "*" Oda : odalar
+OtelYonetimi "1" o-- "*" Musteri : musteriler
+OtelYonetimi "1" o-- "1" BeklemeListesi : bekleme
+OtelYonetimi "1" o-- "*" Rezervasyon : arsiv
+Oda "1" o-- "*" Rezervasyon : aktifRezervasyonlar
+Oda "1" o-- "1" AralikAgaci : agac
+Rezervasyon "1" --> "1" Musteri
+Rezervasyon --> Oda : odaNo
+BeklemeListesi ..> Musteri
+BeklemeListesi ..> Rezervasyon
+AralikAgaci ..> Rezervasyon
+
+@enduml
