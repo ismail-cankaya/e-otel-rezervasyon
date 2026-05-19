@@ -7,8 +7,9 @@
 Adı: E-Otel Rezervasyon Sistemi
 Amaç: Otel zincirlerinin rezervasyon, müşteri yönetimi, fiyatlandırma ve tarih
        çakışma kontrolünü yapan kapsamlı bir arka uç sistemi.
-Dil: Java 17
+Dil: Java 24 (JDK 24)
 Kurgusu: Maven (Bağımlılık Yönetimi)
+Arayüzler: Scanner (CLI) + JavaFX (Desktop GUI)
 
 
 📊 TEKNIK MİMARİ
@@ -26,19 +27,21 @@ Sistem, katmanlaşmış mimari (Layered Architecture) ile düzenlenmişti:
    ├─ OtelYonetimi.java  → Şube Operasyonları (Rez., Çıkış, Sorgu, JSON I/O)
    └─ MerkeziSistem.java → 4 Şube Yönetimi ve Merkezi Rapor
 
-3. APPLICATION KATMANI (application/)
-   └─ RezervasyonConsole.java → Scanner Tabanlı İnteraktif CLI Menü
+ 3. APPLICATION KATMANI (application/)
+    ├─ RezervasyonConsole.java     → Scanner Tabanlı İnteraktif CLI Menü (Konsol)
+    └─ RezervasyonApplication.java → JavaFX Desktop GUI Uygulaması
 
-4. UTILITY KATMANI (util/)
-   └─ AralikAgaci.java   → Interval Tree (Tarih Çakışmalarını Kontrol Eder)
+ 4. UTILITY KATMANI (util/)
+    ├─ AralikAgaci.java              → Interval Tree (Tarih Çakışmalarını Kontrol Eder)
+    └─ KronolojikRezervasyonAgaci.java → Binary Search Tree (Arşiv Kronolojisiasısı)
 
 
 🔌 BAĞIMLILIKLARI (pom.xml)
 ================================================================================
-Maven Varsayılan Yapılandırması:
-- Java Compiler: 17
+Maven Yapılandırması:
+- Java Compiler: 24
 - Gson: 2.10.1 (JSON Serialization/Deserialization)
-- JavaFX: 17.0.6 (GUI Kütüphaneleri - İleride Kullanım İçin)
+- JavaFX: 17.0.6 (GUI Kütüphaneleri - Desktop Uygulaması)
 
 
 📦 MODEL VERİ YAPISILARI (Detaylı)
@@ -108,12 +111,12 @@ BeklemeListesi Sınıfı:
 
 OtelYonetimi (Şube Yönetimi) Sınıfı:
 
-  Yapısındaki Veri Kaynakları:
-    - musteriler: Map<String, Musteri> (TC anahtar)
-    - odalar: Map<String, Oda> (Oda Numarası anahtar)
-    - beklemeListesi: BeklemeListesi
-    - tamamlananRezervasyonlar: List<Rezervasyon> (Arşiv)
-    - gson: Gson (JSON I/O)
+   Yapısındaki Veri Kaynakları:
+     - musteriler: Map<String, Musteri> (TC anahtar)
+     - odalar: Map<String, Oda> (Oda Numarası anahtar)
+     - beklemeListesi: BeklemeListesi
+     - tamamlananRezervasyonlar: KronolojikRezervasyonAgaci (Arşiv - BST yapısı)
+     - gson: Gson (JSON I/O)
 
   DOSYA İŞLEMLERİ (JSON Kalıcılık):
     constructor(dosyaAdi):
@@ -144,11 +147,12 @@ OtelYonetimi (Şube Yönetimi) Sınıfı:
       - JSON'a kaydeder
       Return: Başarı/Hata mesajı
 
-    cikisYap(odaNo, tc):
-      - TC ile müşteri doğrulaması yapılır
-      - Oda boşaldıktan sonra arşive kayıt yapılır
-      - Bekleme listesindeki uygun seçeneği otomatik yerleştirir
-      - JSON'a kaydeder
+     cikisYap(odaNo, tc):
+       - TC ile müşteri doğrulaması yapılır
+       - Oda boşaldıktan sonra tamamlananRezervasyonlar'a ekler
+         (KronolojikRezervasyonAgaci.ekle() ile çıkış tarihi sırasıyla kaydedilir)
+       - Bekleme listesindeki uygun seçeneği otomatik yerleştirir
+       - JSON'a kaydeder
 
   SORGU VE RAPOR İŞLEMLERİ:
     beklemeListesiniGoster(): Bekleme listesini yazdırır
@@ -183,7 +187,7 @@ MerkeziSistem (Zincir Yönetimi) Sınıfı:
       - Zincir geneli özeti
 
 
-🎨 APPLICATION - KLİ ARAYÜZÜ (RezervasyonConsole)
+🎨 APPLICATION KATMANI - KULLANICILAR ARAYÜZÜ
 ================================================================================
 
 Ana Menü İşleyişi:
@@ -238,25 +242,58 @@ ODADAN ÇIKIŞI:
     ✅ Çıkış başarılı. Kayıt arşive aktarıldı.
     (+ Bekleme listesine otomatik yerleştirme kontrolü)
 
-RAPORLAR:
-  📋 Merkezi Rapor: Zincir geneli statistik
-  📋 Şube Raporu: İçerik olmadığında "Rapor Boş" mesajı
-  📋 Bekleme Listesi: FIFO sırasına göre müşteriler
-  📋 Arşiv: Tarih sırasında çıkış yapan müşteriler
+ RAPORLAR:
+   📋 Merkezi Rapor: Zincir geneli statistik
+   📋 Şube Raporu: İçerik olmadığında "Rapor Boş" mesajı
+   📋 Bekleme Listesi: FIFO sırasına göre müşteriler
+   📋 Arşiv: KronolojikRezervasyonAgaci ile tarih sırasında çıkış yapan müşteriler
+             (In-order traversal sonucu kronolojik sırada gösterilir)
 
 
 ⚙️ VERİ YAPISILARI ve ALGORİTMALER
 ================================================================================
 
 Interval Tree (AralikAgaci.java):
-  Amaç: Belirli bir tarih aralığında kaç kişi konaklıyor?
-  Yapı: İkili Ağaç (Binary Tree) tabanlı
-  İşlem:
-    - Ekle (Rezervasyon): O(log n)
-    - Sorgula (Tarih Aralığında Kişi Sayısı): O(log n + k) k:sonuç sayısı
-  Fayda:
-    - Tarih çakışması hızlı kontrolü
-    - Kapasite kontrolü verimli yapılır
+   Amaç: Belirli bir tarih aralığında kaç kişi konaklıyor?
+   Yapı: İkili Ağaç (Binary Tree) tabanlı
+   İşlem:
+     - Ekle (Rezervasyon): O(log n)
+     - Sorgula (Tarih Aralığında Kişi Sayısı): O(log n + k) k:sonuç sayısı
+   Fayda:
+     - Tarih çakışması hızlı kontrolü
+     - Kapasite kontrolü verimli yapılır
+
+Kronolojik Rezervasyon Ağacı (KronolojikRezervasyonAgaci.java):
+   Amaç: Tamamlanan (Çıkış yapılmış) rezervasyonları kronolojik sırada tutmak
+   Yapı: Binary Search Tree (BST) - Tarih anahtarı ile sıralanmış
+
+   Anahtar Bileşenler:
+   - AgacDugumu (İç Sınıf - Serializable):
+     * tarih: LocalDate (Çıkış tarihi - ağaç anahtarı)
+     * rezervasyonlar: List<Rezervasyon> (Aynı tarihte çıkış yapan tüm müşteriler)
+     * sol: AgacDugumu (Daha eski tarihler)
+     * sag: AgacDugumu (Daha yeni tarihler)
+
+   Anahtar Metotlar:
+     ekle(Rezervasyon rez): O(log n)
+       - Rezervasyonun bitiş tarihi (çıkış tarih) ağaca eklenir
+       - Aynı tarihte birden çok çıkış olabilir (List olarak tutulur)
+       - Tarihler otomatik sıralanır (Eski Sol, Yeni Sağ)
+
+     toList(): O(n)
+       - In-order traversal ile (Sol → Kök → Sağ) kronolojik listeyi döndürür
+       - Tamamlanan rezervasyonları tarih sırasıyla rapor için hazırlar
+       - Ay-yıl bazında fatura hesaplamada kullanılır
+
+     temizle()
+       - Tüm ağacı temizler (kök = null)
+       - Yeni sezonda veri sıfırlama için kullanılır
+
+   Faydalar:
+     - O(log n) ekleme → Çıkış işlemi hızlı
+     - O(n) listeleme → Raporlar kronolojik sırada
+     - Ay bazında fatura hesaplaması optimize (Çifte hesaplandırma önlenir)
+     - Arşiv yönetimi verimli yapılır
 
 Kapasiteli Rezervasyon Kontrolü:
   For each Oda:
@@ -267,12 +304,21 @@ Kapasiteli Rezervasyon Kontrolü:
       Else:
         "Bekleme Listesine Ekle"
 
-Akıllı Fatura Algoritması (getToplamHasilat):
-  For each tamamlananRezervasyonlar:
-    For each day in [baslangic, bitis):
-      If day not faturalanan[odaNo]:
-        toplamKasa += oda.gunlukFiyat
-  Sonuç: Çifte faturare engelleme
+ Akıllı Fatura Algoritması (getToplamHasilat):
+   1. KronolojikRezervasyonAgaci.toList() çağrılır
+      → tamamlananRezervasyonlar tarih sırasıyla (In-order) alınır
+   2. For each Çıkış Tarihi Grubu:
+        For each tamamlananRezervasyonlar[i]:
+          gün_sayısı = bitiş - başlangış
+          if oda günü daha önceden faturlanmamış ise:
+            toplam_hasilat += (gün_sayısı × oda.gunlukFiyat)
+          mark oda günü faturalı
+   3. Sonuç: Çifte faturaldırma engellenir
+
+   KronolojikRezervasyonAgaci'nin Avantajı:
+     - Tarih sırasıyla veriler hazırlanır (O(n) traversal)
+     - Ay-yıl bazında raporlar hızlı oluşturulur
+     - Fatura tutarı doğru hesaplanır
 
 FIFO Bekleme Listesi:
   - Düğüm → Düğüm (Linked List)
@@ -309,15 +355,26 @@ Bayburt.json:
   "beklemeListesi": {
     "kafa": null
   },
-  "arsiv": [
-    {
-      "musteri": {"tcNo": "98765432101", "adSoyad": "Ayşe Kaya"},
-      "odaNo": "2",
-      "baslangicTarihi": "2026-05-10",
-      "bitisTarihi": "2026-05-15"
-    }
-  ]
-}
+   "tamamlananRezervasyonlar": [
+     {
+       "musteri": {"tcNo": "98765432101", "adSoyad": "Ayşe Kaya"},
+       "odaNo": "2",
+       "baslangicTarihi": "2026-05-10",
+       "bitisTarihi": "2026-05-15"
+     },
+     {
+       "musteri": {"tcNo": "11111111111", "adSoyad": "Mehmet Demir"},
+       "odaNo": "5",
+       "baslangicTarihi": "2026-05-12",
+       "bitisTarihi": "2026-05-18"
+     }
+   ]
+ }
+
+ NOT: tamamlananRezervasyonlar listesi aşağıdaki sırada tutulur:
+      - Program çalışma sırasında: KronolojikRezervasyonAgaci (BST) ile O(log n) hızında
+      - JSON dosyasında: In-order traversal sonucu kronolojik sırada kaydedilir
+      - Raporlarda: toList() çağrısıyla tarih sırasıyla gösterilir
 
 
 🚀 KURULUM VE ÇALIŞTIRILMA

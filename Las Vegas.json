@@ -1,22 +1,5 @@
 {
-  "musteriler": {
-    "12345678930": {
-      "tcNo": "12345678930",
-      "adSoyad": "İsmail"
-    },
-    "13245556644": {
-      "tcNo": "13245556644",
-      "adSoyad": "Deniz"
-    },
-    "12654798989": {
-      "tcNo": "12654798989",
-      "adSoyad": "Emin"
-    },
-    "45696789879": {
-      "tcNo": "45696789879",
-      "adSoyad": "Eren"
-    }
-  },
+  "musteriler": {},
   "odalar": {
     "1": {
       "odaNo": "1",
@@ -116,42 +99,5 @@
     }
   },
   "beklemeListesi": {},
-  "arsiv": [
-    {
-      "musteri": {
-        "tcNo": "13245556644",
-        "adSoyad": "Deniz"
-      },
-      "odaNo": "13",
-      "baslangicTarihi": "2026-05-19",
-      "bitisTarihi": "2026-05-26"
-    },
-    {
-      "musteri": {
-        "tcNo": "12345678930",
-        "adSoyad": "İsmail"
-      },
-      "odaNo": "13",
-      "baslangicTarihi": "2026-05-19",
-      "bitisTarihi": "2026-05-26"
-    },
-    {
-      "musteri": {
-        "tcNo": "12654798989",
-        "adSoyad": "Emin"
-      },
-      "odaNo": "13",
-      "baslangicTarihi": "2026-05-19",
-      "bitisTarihi": "2026-05-26"
-    },
-    {
-      "musteri": {
-        "tcNo": "45696789879",
-        "adSoyad": "Eren"
-      },
-      "odaNo": "13",
-      "baslangicTarihi": "2026-05-19",
-      "bitisTarihi": "2026-05-26"
-    }
-  ]
+  "arsiv": []
 }

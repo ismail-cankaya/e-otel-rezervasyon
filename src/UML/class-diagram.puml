@@ -26,31 +26,31 @@ package application {
 }
 
 package service {
-  class MerkeziSistem {
-    -Map<String, OtelYonetimi> subeler
-    +MerkeziSistem()
-    +subeGetir(String subeAdi)
-    +merkeziRaporOlustur()
-  }
-  class OtelYonetimi {
-    -Map<String, Musteri> musteriler
-    -Map<String, Oda> odalar
-    -BeklemeListesi beklemeListesi
-    -List<Rezervasyon> tamamlananRezervasyonlar
-    -String DOSYA_ADI
-    -Gson gson
-    +OtelYonetimi(String dosyaAdi)
-    +uygunOdalariGetir(int kisiSayisi, LocalDate bas, LocalDate bit)
-    +musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih)
-    +cikisYap(String odaNo, String tc)
-    +beklemeListesiniGoster()
-    +gecmisRezervasyonlariGoster()
-    +getTümZamanlarKayitliMusteri(): int
-    +getAktifKonaklayanSayisi(): int
-    +getToplamHasilat(): long
-    +aktifKonaklayanlariGoster(): String
-    +tcIleMusteriSorgula(String tc): String
-  }
+   class MerkeziSistem {
+     -Map<String, OtelYonetimi> subeler
+     +MerkeziSistem()
+     +subeGetir(String subeAdi)
+     +merkeziRaporOlustur()
+   }
+   class OtelYonetimi {
+     -Map<String, Musteri> musteriler
+     -Map<String, Oda> odalar
+     -BeklemeListesi beklemeListesi
+     -KronolojikRezervasyonAgaci tamamlananRezervasyonlar
+     -String DOSYA_ADI
+     -Gson gson
+     +OtelYonetimi(String dosyaAdi)
+     +uygunOdalariGetir(int kisiSayisi, LocalDate bas, LocalDate bit)
+     +musteriKayitVeRezervasyon(String tc, String ad, String odaNo, String basTarih, String bitTarih)
+     +cikisYap(String odaNo, String tc)
+     +beklemeListesiniGoster()
+     +gecmisRezervasyonlariGoster()
+     +getTümZamanlarKayitliMusteri(): int
+     +getAktifKonaklayanSayisi(): int
+     +getToplamHasilat(): long
+     +aktifKonaklayanlariGoster(): String
+     +tcIleMusteriSorgula(String tc): String
+   }
 }
 
 package model {
@@ -104,10 +104,24 @@ package model {
 }
 
 package util {
-  class AralikAgaci {
-    +ekle(Rezervasyon yeniRez)
-    +cakisanSayisiniBul(LocalDate bas, LocalDate bit): int
-  }
+   class AralikAgaci {
+     +ekle(Rezervasyon yeniRez)
+     +cakisanSayisiniBul(LocalDate bas, LocalDate bit): int
+   }
+   class KronolojikRezervasyonAgaci {
+     -AgacDugumu kok
+     +ekle(Rezervasyon rez)
+     +toList(): List<Rezervasyon>
+     +temizle()
+     -ekleRec(AgacDugumu dugum, Rezervasyon rez): AgacDugumu
+     -inOrderGez(AgacDugumu dugum, List liste)
+   }
+   class KronolojikRezervasyonAgaci::AgacDugumu {
+     +LocalDate tarih
+     +List<Rezervasyon> rezervasyonlar
+     +AgacDugumu sol
+     +AgacDugumu sag
+   }
 }
 
 MainLauncher --> RezervasyonApplication : calls
@@ -118,7 +132,9 @@ MerkeziSistem "1" o-- "4" OtelYonetimi : subeler
 OtelYonetimi "1" o-- "*" Oda : odalar
 OtelYonetimi "1" o-- "*" Musteri : musteriler
 OtelYonetimi "1" o-- "1" BeklemeListesi : bekleme
-OtelYonetimi "1" o-- "*" Rezervasyon : arsiv
+OtelYonetimi "1" *-- "1" KronolojikRezervasyonAgaci : tamamlananRezervasyonlar
+KronolojikRezervasyonAgaci "1" *-- "1" KronolojikRezervasyonAgaci::AgacDugumu : kok
+KronolojikRezervasyonAgaci::AgacDugumu "1" o-- "*" Rezervasyon : rezervasyonlar
 Oda "1" o-- "*" Rezervasyon : aktifRezervasyonlar
 Oda "1" o-- "1" AralikAgaci : agac
 Rezervasyon "1" --> "1" Musteri
@@ -126,5 +142,6 @@ Rezervasyon --> Oda : odaNo
 BeklemeListesi ..> Musteri
 BeklemeListesi ..> Rezervasyon
 AralikAgaci ..> Rezervasyon
+KronolojikRezervasyonAgaci ..> Rezervasyon
 
 @enduml
