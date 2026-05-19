@@ -59,8 +59,6 @@ public class OtelYonetimi {
             tumVeri.put("musteriler", musteriler);
             tumVeri.put("odalar", odalar);
             tumVeri.put("beklemeListesi", beklemeListesi);
-
-            // YENİ: BST Ağacını JSON'a kaydederken düz liste (toList) olarak veriyoruz ki Gson sorunsuz yazsın
             tumVeri.put("arsiv", tamamlananRezervasyonlar.toList());
 
             gson.toJson(tumVeri, writer);
