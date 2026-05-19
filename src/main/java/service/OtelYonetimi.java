@@ -38,7 +38,6 @@ public class OtelYonetimi {
     private Map<String, Oda> odalar = new LinkedHashMap<>();
 
     private BeklemeListesi beklemeListesi = new BeklemeListesi();
-    // Arşiv artık silinmemesi için List (Liste) yapısına geçirdik.
     private List<Rezervasyon> tamamlananRezervasyonlar = new ArrayList<>();
 
     private final String DOSYA_ADI;

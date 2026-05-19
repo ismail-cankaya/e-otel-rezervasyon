@@ -10,7 +10,7 @@ public class MerkeziSistem {
     public MerkeziSistem() {
         this.subeler = new HashMap<>();
 
-        // Sisteme şubeleri kendi özel JSON dosyalarıyla ekliyoruz.
+        // Sisteme şubeleri  JSON dosyaları
         subeler.put("Bayburt", new OtelYonetimi("Bayburt.json"));
         subeler.put("Los Angeles", new OtelYonetimi("Los Angeles.json"));
         subeler.put("Las Vegas", new OtelYonetimi("Las Vegas.json"));
@@ -33,7 +33,7 @@ public class MerkeziSistem {
 
         int genelKayitli = 0;
         int genelAktif = 0;
-        long genelHasilat = 0; // YENİ: Toplam para için eklendi
+        long genelHasilat = 0;
 
         for (Map.Entry<String, OtelYonetimi> entry : subeler.entrySet()) {
             String subeAdi = entry.getKey();
@@ -41,7 +41,7 @@ public class MerkeziSistem {
 
             int kayitli = sube.getTümZamanlarKayitliMusteri();
             int aktif = sube.getAktifKonaklayanSayisi();
-            long hasilat = sube.getToplamHasilat(); // YENİ: Şubenin kasası çekiliyor
+            long hasilat = sube.getToplamHasilat();
 
             genelKayitli += kayitli;
             genelAktif += aktif;

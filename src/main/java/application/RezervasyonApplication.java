@@ -19,16 +19,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import service.MerkeziSistem;
 
-/**
- * E-Otel Yönetim Sistemi Ana Arayüz (GUI) Sınıfı
- * * --- HATA YÖNETİMİ (ERROR HANDLING) ---
- * 1. Geçersiz Giriş: Kullanıcının girdiği TC Kimlik ve Ad-Soyad bilgileri boşluk testine tabi tutulmuştur.
- * 2. Format Kontrolü: TC Kimlik alanına harf girilmesi durumu try-catch (NumberFormatException) ile yakalanmış
- * ve 11 hane kuralı eklenmiştir.
- * 3. Eksik Veri: Oda veya tarih seçilmeden işlem yapılması engellenmiştir.
- * * --- ÇOKLU ŞUBE MİMARİSİ (MULTI-BRANCH ARCHITECTURE) ---
- * - MerkeziSistem üzerinden O(1) karmaşıklıkla istenilen şubenin verilerine erişilir.
- */
+
 public class RezervasyonApplication extends Application {
 
     private MerkeziSistem merkez;
@@ -40,7 +31,7 @@ public class RezervasyonApplication extends Application {
 
         primaryStage.setTitle("E-Otel Yönetim Sistemi - Merkezi Sistem");
 
-        // --- EN ÜST KISIM: ŞUBE SEÇİCİ ---
+        // Şube Seçici
         cmbAktifSube = new ComboBox<>();
         cmbAktifSube.getItems().addAll("Çorlu", "Bayburt", "Los Angeles", "Las Vegas");
         cmbAktifSube.setValue("Çorlu"); // Varsayılan Şube
@@ -54,7 +45,7 @@ public class RezervasyonApplication extends Application {
         topBox.setPadding(new Insets(15));
         topBox.setStyle("-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;");
 
-        // --- SEKMELER (TABS) ---
+        // Sekmeler
         TabPane tabPane = new TabPane();
         tabPane.setStyle("-fx-background-color: #f8f9fa; -fx-font-family: 'Segoe UI', sans-serif;");
 
@@ -72,11 +63,10 @@ public class RezervasyonApplication extends Application {
 
         tabPane.getTabs().addAll(tabRezervasyon, tabCikis, tabRaporlar);
 
-        // Ana düzen (Kök): Üstte şube seçici, altta sekmeler
         VBox root = new VBox(topBox, tabPane);
-        VBox.setVgrow(tabPane, Priority.ALWAYS); // TabPane alanı doldursun
+        VBox.setVgrow(tabPane, Priority.ALWAYS);
 
-        Scene scene = new Scene(root, 400, 500); // Pencere boyutunu biraz büyüttük
+        Scene scene = new Scene(root, 400, 500);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -88,7 +78,7 @@ public class RezervasyonApplication extends Application {
         lblBaslik.setMaxWidth(Double.MAX_VALUE);
         lblBaslik.setAlignment(Pos.CENTER);
 
-        // --- 1. AŞAMA: ARAMA KRİTERLERİ ---
+        // Arama kriterleri ve oda bulma butonu
         GridPane searchGrid = new GridPane();
         searchGrid.setVgap(10); searchGrid.setHgap(15);
 
@@ -107,7 +97,7 @@ public class RezervasyonApplication extends Application {
         searchGrid.add(new Label("Çıkış Tarihi:"), 0, 2); searchGrid.add(dpBit, 1, 2);
         searchGrid.add(btnOdaBul, 1, 3);
 
-        // --- 2. AŞAMA: SONUÇLAR VE DİNAMİK FORM ---
+        // Sonuçlar ve dinamik form
         ComboBox<String> cmbOdaNo = new ComboBox<>();
         cmbOdaNo.setPromptText("Müsait Odaları Göster");
         cmbOdaNo.setDisable(true);
@@ -120,7 +110,7 @@ public class RezervasyonApplication extends Application {
         lblSonuc.setStyle("-fx-font-weight: bold;");
         lblSonuc.setWrapText(true); // Uzun hata veya başarı mesajları ekrandan taşmasın, alt satıra geçsin
 
-        // ODA BUL BUTONUNA TIKLANINCA
+        // Oda bul butonuna tıklandığında çalışan yer
         btnOdaBul.setOnAction(e -> {
             if (cmbKisiSayisi.getValue() == null || dpBas.getValue() == null || dpBit.getValue() == null) {
                 lblSonuc.setText("Lütfen arama için kişi sayısı ve tarihleri eksiksiz girin.");
@@ -161,22 +151,19 @@ public class RezervasyonApplication extends Application {
             }
         });
 
-        // --- 3. AŞAMA: AKSİYON BUTONLARI (YAN YANA EN ALTTA) ---
+        //  AKSİYON BUTONLARI - KAYDET VE TEMİZLE
         Button btnKaydet = new Button("Tüm Kişileri Kaydet");
         btnKaydet.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
 
         Button btnTemizle = new Button("Çıkış / Temizle");
         btnTemizle.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 15;");
 
-        // İki butonun arasını tamamen açacak esnek boşluk elemanı
         javafx.scene.layout.Region yay = new javafx.scene.layout.Region();
         HBox.setHgrow(yay, Priority.ALWAYS);
-
-        // Yay elemanını iki butonun ortasına koyuyoruz
         HBox butonKutusu = new HBox(btnKaydet, yay, btnTemizle);
         butonKutusu.setAlignment(Pos.CENTER_LEFT);
 
-        // TEMİZLE BUTONUNUN İŞLEVİ
+        // Temizleme butonu
         btnTemizle.setOnAction(e -> {
             cmbKisiSayisi.getSelectionModel().clearSelection();
             dpBas.setValue(null);
@@ -187,7 +174,7 @@ public class RezervasyonApplication extends Application {
             lblSonuc.setText("");
         });
 
-        // KAYDET BUTONUNUN İŞLEVİ
+        // Kaydet butonu
         btnKaydet.setOnAction(e -> {
             if (cmbOdaNo.getValue() == null) {
                 lblSonuc.setText("Lütfen filtrelenen listeden bir oda seçiniz.");
@@ -270,7 +257,7 @@ public class RezervasyonApplication extends Application {
                 return;
             }
 
-            // DÜZELTME: Çıkış işlemi de aktif şubeye bildiriliyor
+            // Çıkış işlemi, aktif şubeye bildirme
             String aktifSube = cmbAktifSube.getValue();
             String sonuc = merkez.subeGetir(aktifSube).cikisYap(secilenOda, tcNo);
 
