@@ -18,17 +18,7 @@
       "odaNo": "1",
       "kapasite": 1,
       "gunlukFiyat": 1200,
-      "aktifRezervasyonlar": [
-        {
-          "musteri": {
-            "tcNo": "11111111111",
-            "adSoyad": "deniz k"
-          },
-          "odaNo": "1",
-          "baslangicTarihi": "2026-05-20",
-          "bitisTarihi": "2026-05-28"
-        }
-      ]
+      "aktifRezervasyonlar": []
     },
     "2": {
       "odaNo": "2",
@@ -52,7 +42,17 @@
       "odaNo": "5",
       "kapasite": 2,
       "gunlukFiyat": 1800,
-      "aktifRezervasyonlar": []
+      "aktifRezervasyonlar": [
+        {
+          "musteri": {
+            "tcNo": "11111111111",
+            "adSoyad": "deniz k"
+          },
+          "odaNo": "5",
+          "baslangicTarihi": "2026-05-20",
+          "bitisTarihi": "2026-05-27"
+        }
+      ]
     },
     "6": {
       "odaNo": "6",
@@ -149,6 +149,42 @@
       "odaNo": "5",
       "baslangicTarihi": "2026-05-20",
       "bitisTarihi": "2026-05-23"
+    },
+    {
+      "musteri": {
+        "tcNo": "11111111111",
+        "adSoyad": "deniz k"
+      },
+      "odaNo": "1",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-28"
+    },
+    {
+      "musteri": {
+        "tcNo": "11111111111",
+        "adSoyad": "deniz k"
+      },
+      "odaNo": "5",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-27"
+    },
+    {
+      "musteri": {
+        "tcNo": "11111111111",
+        "adSoyad": "deniz k"
+      },
+      "odaNo": "5",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-27"
+    },
+    {
+      "musteri": {
+        "tcNo": "11111111112",
+        "adSoyad": "ahmet o"
+      },
+      "odaNo": "5",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-27"
     }
   ]
 }

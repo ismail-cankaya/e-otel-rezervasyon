@@ -55,7 +55,7 @@ public class MerkeziSistem {
         }
 
         rapor.append("\n📊 GENEL ZİNCİR ÖZETİ:\n");
-        rapor.append("Toplam Sistemdeki Müşteri Hesabı: ").append(genelKayitli).append("\n");
+        rapor.append("Sistemdeki Toplam Müşteri Sayısı: ").append(genelKayitli).append("\n");
         rapor.append("Şu An Aktif Kalan Toplam Müşteri: ").append(genelAktif).append("\n");
         rapor.append("Tüm Zincirin Toplam Hasılatı: ").append(genelHasilat).append(" TL\n");
         rapor.append("=========================================\n");
