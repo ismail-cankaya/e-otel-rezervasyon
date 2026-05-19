@@ -1,74 +1,454 @@
-E-OTEL REZERVASYON SISTEMI
+================================================================================
+         E-OTEL REZERVASYON SİSTEMİ - DETAYLI DOKÜMANTASYON
+================================================================================
 
-E-Otel Rezervasyon Sistemi, modern otel isletmelerinin musteri kayit, oda tahsisi ve kapasite yonetimi sureclerini optimize etmek amaciyla gelistirilmis kapsamli bir konsol uygulamasidir. Sistem, ozellikle yogun donemlerde karsilasilan tarih cakismalarini Aralik Agaci (Interval Tree) veri yapisi ile yuksek performansli bir sekilde cozerek kesintisiz bir rezervasyon deneyimi sunar.
+🏨 PROJE HAKKINDA
+================================================================================
+Adı: E-Otel Rezervasyon Sistemi
+Amaç: Otel zincirlerinin rezervasyon, müşteri yönetimi, fiyatlandırma ve tarih
+       çakışma kontrolünü yapan kapsamlı bir arka uç sistemi.
+Dil: Java 17
+Kurgusu: Maven (Bağımlılık Yönetimi)
 
-TEMEL OZELLIKLER
 
-* Coklu Sube Yonetimi: Bayburt, Corlu, Los Angeles ve Las Vegas subelerinin tek bir merkezden, ancak birbirinden bagimsiz veritabanlariyla yonetilmesi.
-* Dinamik Rezervasyon ve Cakisma Kontrolu: 11 haneli TC Kimlik Numarasi dogrulamasi ile guvenli kayit. Interval Tree algoritmasi sayesinde, istenen tarih araliklarindaki musaitlik durumunun O(log n) karmasikliginda hizli tespiti.
-* Akilli Bekleme Listesi (Waitlist): Kapasitesi dolan odalar icin Bagli Liste (Linked List) tabanli, FIFO (Ilk Giren Ilk Cikar) prensibiyle calisan otomatik sira yonetimi. Odayi bosaltan bir musteri oldugunda, siradaki musteri otomatik olarak isleme alinir.
-* Cikis Islemleri ve Arsivleme: Musteri cikislarinda TC kimlik dogrulamasi ve gecmis rezervasyonlarin guvenli bir sekilde arsive aktarilmasi.
-* Kalici Veri Depolama: Tum rezervasyon, bekleme listesi ve sube verilerinin Gson kutuphanesi kullanilarak JSON formatinda kalici olarak saklanmasi.
+📊 TEKNIK MİMARİ
+================================================================================
+Sistem, katmanlaşmış mimari (Layered Architecture) ile düzenlenmişti:
 
-TEKNOLOJILER VE VERI YAPILARI
+1. MODEL KATMANI (model/)
+   ├─ Musteri.java       → TC, Ad/Soyad bilgileri
+   ├─ Oda.java           → Oda No, Kapasite, Günlük Fiyat, Aktif Rezervasyonlar
+   ├─ Rezervasyon.java   → Müşteri, Oda, Başlangıç/Bitiş Tarihi
+   ├─ BeklemeListesi.java→ Bağlı Liste Veri Yapısı (FIFO Sistemi)
+   └─ İç Veri Yapıları   → Bekleme Listesi Düğümleri
 
-Bu proje, temel programlama prensiplerinin yani sira ileri duzey veri yapilarinin pratik uygulamalarini icermektedir:
+2. SERVICE KATMANI (service/)
+   ├─ OtelYonetimi.java  → Şube Operasyonları (Rez., Çıkış, Sorgu, JSON I/O)
+   └─ MerkeziSistem.java → 4 Şube Yönetimi ve Merkezi Rapor
 
-* Dil: Java (JDK 8+)
-* Bagimlilik Yonetimi: Maven (v3.6+)
-* Veri Formati: JSON (Gson v2.10)
-* Aralik Agaci (Interval Tree): Tarihsel verilerin cakisma analizlerini anlik ve verimli bir sekilde yapmak icin odalarin arka planinda calisir.
-* Bagli Liste (Linked List): Bekleme listesindeki musterilerin bellek dostu ve sirali bir sekilde tutulmasi icin kullanilmistir.
+3. APPLICATION KATMANI (application/)
+   └─ RezervasyonConsole.java → Scanner Tabanlı İnteraktif CLI Menü
 
-PROJE MIMARISI
+4. UTILITY KATMANI (util/)
+   └─ AralikAgaci.java   → Interval Tree (Tarih Çakışmalarını Kontrol Eder)
 
-Proje, Surdurulebilirlik ve genisletilebilirlik ilkelerine uygun olarak Moduler (Katmanli) Mimari ile tasarlanmistir:
 
-src/
--- application/
-   -- MainLauncher.java (Programin baslangic noktasi)
-   -- RezervasyonApplication.java (Uygulama baslatici ve yapilandirici)
-   -- RezervasyonConsole.java (Etkilesimli, kullanici dostu konsol arayuzu)
--- model/
-   -- Musteri.java (Musteri verilerini tutan entity)
-   -- Oda.java (Oda modeli, Interval Tree entegrasyonu icerir)
-   -- Rezervasyon.java (Rezervasyon detaylari)
-   -- BeklemeListesi.java (Bekleyen musteriler icin Linked List yapisi)
--- service/
-   -- MerkeziSistem.java (4 farkli subenin genel orkestrasyonu)
-   -- OtelYonetimi.java (Sube bazli algoritmik is mantigi)
+🔌 BAĞIMLILIKLARI (pom.xml)
+================================================================================
+Maven Varsayılan Yapılandırması:
+- Java Compiler: 17
+- Gson: 2.10.1 (JSON Serialization/Deserialization)
+- JavaFX: 17.0.6 (GUI Kütüphaneleri - İleride Kullanım İçin)
 
-data/
--- Bayburt.json
--- Corlu.json
--- Los Angeles.json
--- Las Vegas.json
 
-KURULUM VE CALISTIRMA
+📦 MODEL VERİ YAPISILARI (Detaylı)
+================================================================================
 
-Projeyi kendi lokal ortaminizda test etmek icin asagidaki adimlari izleyebilirsiniz:
+Musteri (Müşteri) Sınıfı:
+  Bilgiler:
+    - tcNo: String (11 haneli, rakamsal)
+    - adSoyad: String (Müşteri adı ve soyadı)
+  Metotlar:
+    - Getter/Setter (TC, Ad/Soyad)
+  JSON Örneği:
+    {
+      "tcNo": "12345678901",
+      "adSoyad": "Ahmet Yılmaz"
+    }
 
-1. Depoyu Klonlayin:
-git clone https://github.com/kullaniciadi/e-otel-rezervasyon.git
-cd e-otel-rezervasyon
+Oda Sınıfı:
+  Bilgiler:
+    - odaNo: String (Oda numarası)
+    - kapasite: int (1-4 arası kişi kapasitesi)
+    - gunlukFiyat: int (Günlük konaklama ücreti TL cinsinden)
+    - aktifRezervasyonlar: List<Rezervasyon> (Aktif rezervasyonlar)
+    - agac: AralikAgaci (Tarih çakışmalarını kontrol için)
+  Anahtar Metotlar:
+    - musaitMi(baslangic, bitis): Tarih aralığında oda müsait mi?
+    - getTarihtekiKisiSayisi(): O tarihler arasında kaç kişi konaklıyor?
+    - rezervasyonEkle() / rezervasyonSil(): Sürü yönetimi
+  Fiyatlandırma (Şubelere Göre):
+    Bayburt:        1 Ki: 2000 TL | 2 Ki: 3000 TL | 3 Ki: 4000 TL | 4 Ki: 5000 TL
+    Çorlu:          1 Ki: 1200 TL | 2 Ki: 1800 TL | 3 Ki: 2400 TL | 4 Ki: 3200 TL
+    Los Angeles:    1 Ki: 1800 TL | 2 Ki: 2600 TL | 3 Ki: 3500 TL | 4 Ki: 4500 TL
+    Las Vegas:      1 Ki: 1900 TL | 2 Ki: 2800 TL | 3 Ki: 3800 TL | 4 Ki: 4800 TL
 
-2. Gereksinimleri Yukleyin:
-Sisteminizde Java 8+ ve Maven kurulu oldugundan emin olun. Proje kok dizininde pom.xml bulundugu icin IDE'niz (IntelliJ IDEA, Eclipse, vb.) gerekli Gson kutuphanesini otomatik olarak indirecektir.
+Rezervasyon Sınıfı:
+  Bilgiler:
+    - musteri: Musteri (Konaklamacak müşteri objesi)
+    - odaNo: String (Rezervasyon yapılan oda)
+    - baslangicTarihi: LocalDate (Giriş tarihi, YYYY-MM-DD)
+    - bitisTarihi: LocalDate (Çıkış tarihi, YYYY-MM-DD)
+  Özellikleri:
+    - Kompoziyon ilişkisi: Müşteri ve Rezervasyon bağlıdır
+    - toString(): Anlaşılır format output
+  JSON Örneği:
+    {
+      "musteri": {"tcNo": "12345678901", "adSoyad": "Ahmet Yılmaz"},
+      "odaNo": "5",
+      "baslangicTarihi": "2026-05-20",
+      "bitisTarihi": "2026-05-25"
+    }
 
-3. Uygulamayi Baslatin:
-IDE'niz uzerinden src/application/ConsoleUI.java dosyasini acin ve main metodunu calistirin.
+BeklemeListesi Sınıfı:
+  Yapı:
+    - FIFO (First In First Out) sistemine dayalı bağlı liste
+    - Her düğüm bir Rezervasyon tutar
+  Kullanım Alanları:
+    - Oda dolu ise müşteri bekleme listesine eklenir
+    - Oda boşalınca sıdaki müşteri otomatik yerleştirilme kontrolü yapılır
+  Anahtar Metot:
+    - kuyrugaEkle(musteri, odaNo, bas, bit): Bekleme listesine ekle
+    - siradakiUygunTalebiAl(oda): Sıradaki uygun müşteriyi al
+    - listeyiYazdir(): Konsola yazdır
 
-KULLANIM REHBERI
 
-Program basariyla baslatildiginda sizi etkilesimli bir ana menu karsilar:
+🔧 SERVICE KATMANI (İş Mantığı)
+================================================================================
 
-1. Sube Secimi & Merkezi Rapor: Ilgili subeyi secerek veya tum subelerin ozet raporunu (toplam kayitlar, bekleme durumlari) goruntuleyerek baslayin.
-2. Rezervasyon Islemleri: Yeni Rezervasyon Yap secenegi ile musteri bilgilerini (TC, Ad-Soyad, Oda No, Baslangic/Bitis Tarihi) girin. Sistem tarih cakismasi tespit ederse sizi uyaracak ve isterseniz musteriyi Bekleme Listesine alacaktir.
-3. Cikis ve Arsiv: Odadan Cikis Yap secenegini kullanarak musterinin kaydini arsive tasiyin. Bu islem, bekleyen musteriler icin odayi otomatik olarak musait hale getirir.
+OtelYonetimi (Şube Yönetimi) Sınıfı:
 
-HATA YONETIMI POLITIKASI
+  Yapısındaki Veri Kaynakları:
+    - musteriler: Map<String, Musteri> (TC anahtar)
+    - odalar: Map<String, Oda> (Oda Numarası anahtar)
+    - beklemeListesi: BeklemeListesi
+    - tamamlananRezervasyonlar: List<Rezervasyon> (Arşiv)
+    - gson: Gson (JSON I/O)
 
-Sistem, kullanici deneyimini kesintiye ugratmamak adina saglam bir hata yonetimine sahiptir:
-* Gecersiz (11 haneden farkli veya harf iceren) TC kimlik numaralari reddedilir.
-* Gecmis tarihlere veya baslangic tarihinden onceye denk gelen bitis tarihleriyle rezervasyon yapilamaz.
-* Gecersiz menu secimleri ve format hatalari (sayi yerine harf girilmesi) uygulamanin cokmesini engellemek icin Try-Catch bloklariyla guvenli bir sekilde yakalanir.
+  DOSYA İŞLEMLERİ (JSON Kalıcılık):
+    constructor(dosyaAdi):
+      - "Bayburt.json", "Los Angeles.json", "Las Vegas.json", "Çorlu.json"
+      - İlk çalışmada 16 oda otomatik oluşturur
+      - JSON varsa yükledi, yoksa default odalar oluşturur
+
+    save(): JSON dosyasına yazma
+    upload(): JSON dosyasından okuma
+    odaEkle(): 16 oda başlangıç yapısı
+      - Odalar 1-4: 1 kişi kapasitesi
+      - Odalar 5-8: 2 kişi kapasitesi
+      - Odalar 9-12: 3 kişi kapasitesi
+      - Odalar 13-16: 4 kişi kapasitesi
+
+  REZERVASYON İŞLEMLERİ:
+    uygunOdalariGetir(kisiSayisi, bas, bit):
+      - Belirtilen kişi sayısına uygun odaları listeler
+      - Her oda için durum gösterir (Boş / Müsait / Dolu)
+      - Fiyat bilgisi ile birlikte sunuş
+
+    musteriKayitVeRezervasyon(tc, ad, odaNo, basTarih, bitTarih):
+      - Yeni müşteri kaydı veya mevcut güncelleme
+      - Tarih yazım hatalarını kontrol (YYYY-MM-DD)
+      - Geçmiş tarihe rezervasyon engellenir
+      - Kapasite kontrolü (Müsait ise doğrudan, değilse Bekleme Listesi)
+      - Fiyat hesaplama: gunSayisi × gunlukFiyat
+      - JSON'a kaydeder
+      Return: Başarı/Hata mesajı
+
+    cikisYap(odaNo, tc):
+      - TC ile müşteri doğrulaması yapılır
+      - Oda boşaldıktan sonra arşive kayıt yapılır
+      - Bekleme listesindeki uygun seçeneği otomatik yerleştirir
+      - JSON'a kaydeder
+
+  SORGU VE RAPOR İŞLEMLERİ:
+    beklemeListesiniGoster(): Bekleme listesini yazdırır
+    gecmisRezervasyonlariGoster(): Arşiv rezervasyonlarını yazdırır
+    aktifKonaklayanlariGoster(): Şu an otelde olan müşteri listesi
+    tcIleMusteriSorgula(tc): TC ile müşteri sorgusu
+    getTümZamanlarKayitliMusteri(): Toplam kayıtlı müşteri sayısı
+    getAktifKonaklayanSayisi(): Şu an konaklayan sayısı
+    getToplamHasilat(): Akıllı fatura algoritması (Çifte hesaplandırmayı önler)
+
+
+MerkeziSistem (Zincir Yönetimi) Sınıfı:
+
+  Yapısı:
+    - subeler: Map<String, OtelYonetimi> (Şube adı → OtelYonetimi)
+    - 4 Şube başlangıç:
+      * "Bayburt" → Bayburt.json
+      * "Los Angeles" → Los Angeles.json
+      * "Las Vegas" → Las Vegas.json
+      * "Çorlu" → Çorlu.json
+
+  Anahtar Metotlar:
+    subeGetir(subeAdi):
+      - Belirtilen şubenin OtelYonetimi nesnesini döndürür
+      - Case-sensitive değil (trim işlemi)
+
+    merkeziRaporOlustur():
+      - Her şubenin bilgilerini rapor olarak hazırlayed
+      - Toplam Müşteri Sayısı
+      - Toplam Aktif Konaklayanlar
+      - Toplam Hasılat
+      - Zincir geneli özeti
+
+
+🎨 APPLICATION - KLİ ARAYÜZÜ (RezervasyonConsole)
+================================================================================
+
+Ana Menü İşleyişi:
+  while(true) döngüsü içinde çalışır
+
+  Seçenekler:
+    0 - Merkezi Rapor Görüntüle
+    1 - Bayburt Şubesi
+    2 - Çorlu Şubesi
+    3 - Los Angeles Şubesi
+    4 - Las Vegas Şubesi
+    5 - Çıkış
+
+Şube Menüsü (Her şube için):
+  1 - Yeni Rezervasyon Yap
+  2 - Odadan Çıkış Yap
+  3 - Bekleme Listesi Görüntüle
+  4 - Arşivlenmiş Rezervasyonları Görüntüle
+  5 - TC ile Müşteri Sorgusu
+  6 - Aktif Konaklayanları Görüntüle
+  7 - Şube Değiştir
+  8 - Çıkış
+
+UYGUN ODALAR ARAMA:
+  Müşteri, kişi sayısı ve tarih aralığını girdikten sonra uygun odalar listelenir:
+    Örn: "5 Numaralı Oda - Gecelik: 3000 TL | Durum: Boş"
+  Müşteri müsait odalardan birini seçer
+
+YENİ RESERVASYONveri Girişi:
+  🆔 TC No: (11 hane, rakamsal - doğrulama yapılır)
+  👤 Ad Soyad: (Metin)
+  👥 Kişi Sayısı: (1-4 arası)
+  🚪 Oda Numarası: (Listelenen müsait odalardan seç)
+  📅 Başlangıç Tarihi: (YYYY-MM-DD formatı)
+  📅 Bitiş Tarihi: (YYYY-MM-DD formatı, Başlangıçtan sonra olmalı)
+
+  Doğrulamalar:
+    ✓ TC 11 rakamsal hane
+    ✓ Tarih geçmiş olamaz
+    ✓ Bitiş > Başlangıç
+    ✓ Oda kapasitesi ≥ Kişi Sayısı
+
+  Başarı Mesajı:
+    ✅ Başarılı: MÜŞTERI_ADI adına ODA_NO nolu odaya kayıt yapıldı.
+    Gecelik: 3000 TL | Süre: 5 Gün | Toplam Fatura: 15000 TL
+
+ODADAN ÇIKIŞI:
+  🚪 Oda Numarası:
+  🆔 TC No: (Doğrulama - şubu bu TC kayıtlı mı?)
+
+  Başarı:
+    ✅ Çıkış başarılı. Kayıt arşive aktarıldı.
+    (+ Bekleme listesine otomatik yerleştirme kontrolü)
+
+RAPORLAR:
+  📋 Merkezi Rapor: Zincir geneli statistik
+  📋 Şube Raporu: İçerik olmadığında "Rapor Boş" mesajı
+  📋 Bekleme Listesi: FIFO sırasına göre müşteriler
+  📋 Arşiv: Tarih sırasında çıkış yapan müşteriler
+
+
+⚙️ VERİ YAPISILARI ve ALGORİTMALER
+================================================================================
+
+Interval Tree (AralikAgaci.java):
+  Amaç: Belirli bir tarih aralığında kaç kişi konaklıyor?
+  Yapı: İkili Ağaç (Binary Tree) tabanlı
+  İşlem:
+    - Ekle (Rezervasyon): O(log n)
+    - Sorgula (Tarih Aralığında Kişi Sayısı): O(log n + k) k:sonuç sayısı
+  Fayda:
+    - Tarih çakışması hızlı kontrolü
+    - Kapasite kontrolü verimli yapılır
+
+Kapasiteli Rezervasyon Kontrolü:
+  For each Oda:
+    If oda.kapasite == kisiSayisi:
+      oTarihtekiKisiSayisi = agac.cakisanSayisiniBul(bas, bit)
+      If oTarihtekiKisiSayisi < kapasitesi:
+        "Oda Müsait"
+      Else:
+        "Bekleme Listesine Ekle"
+
+Akıllı Fatura Algoritması (getToplamHasilat):
+  For each tamamlananRezervasyonlar:
+    For each day in [baslangic, bitis):
+      If day not faturalanan[odaNo]:
+        toplamKasa += oda.gunlukFiyat
+  Sonuç: Çifte faturare engelleme
+
+FIFO Bekleme Listesi:
+  - Düğüm → Düğüm (Linked List)
+  - İlk eklenen ilk çıkar
+  - Sanal kapasitesi sınırsız
+
+
+📝 JSON VERİ YAPISI ÖRNEĞİ
+================================================================================
+
+Bayburt.json:
+{
+  "musteriler": {
+    "12345678901": {
+      "tcNo": "12345678901",
+      "adSoyad": "Ahmet Yılmaz"
+    }
+  },
+  "odalar": {
+    "1": {
+      "odaNo": "1",
+      "kapasite": 1,
+      "gunlukFiyat": 2000,
+      "aktifRezervasyonlar": [
+        {
+          "musteri": {"tcNo": "12345678901", "adSoyad": "Ahmet Yılmaz"},
+          "odaNo": "1",
+          "baslangicTarihi": "2026-05-20",
+          "bitisTarihi": "2026-05-22"
+        }
+      ]
+    }
+  },
+  "beklemeListesi": {
+    "kafa": null
+  },
+  "arsiv": [
+    {
+      "musteri": {"tcNo": "98765432101", "adSoyad": "Ayşe Kaya"},
+      "odaNo": "2",
+      "baslangicTarihi": "2026-05-10",
+      "bitisTarihi": "2026-05-15"
+    }
+  ]
+}
+
+
+🚀 KURULUM VE ÇALIŞTIRILMA
+================================================================================
+
+GEREKSINIMLER:
+  ✓ Java 17 (JDK)
+  ✓ Maven 3.6+ (Build aracı)
+  ✓ IDE: IntelliJ IDEA, Eclipse, VS Code + Extension
+  ✓ Git (Versiyon kontrolü - isteğe bağlı)
+
+ADIM 1 - Proje Açma:
+  1. IntelliJ IDEA veya IDE'niz açın
+  2. "Open Project" → e-otel-rezervasyon klasörünü seçin
+  3. pom.xml Maven olarak yapılandırılmış olmalı
+
+ADIM 2 - Bağımlılıkları İndirme:
+  Maven otomatik indirir, manuel olarak:
+  IDE'de sağ tıklama → "Run 'pom.xml'" veya Terminal:
+    mvn clean install
+
+ADIM 3 - Projeyi Çalıştırma:
+
+  İntelliJ IDEA'da:
+    1. RezervasyonConsole.java dosyasını aç
+    2. Sağ tıkla → "Run 'RezervasyonConsole.main()'"
+    Veya: Ctrl+Shift+F10 (Windows/Linux)
+
+  Terminal Üzerinden:
+    mvn clean compile
+    mvn exec:java -Dexec.mainClass="application.RezervasyonConsole"
+
+ADIM 4 - Programı Kapatma:
+  Ana menüden "5 - Çıkış" seçeneği ile veya Ctrl+C
+
+
+📚 KULLANIM ÖRNEĞİ
+================================================================================
+
+Senaryo: Ahmet Yılmaz, Bayburt şubesinde 20-25 Mayıs arasında 2 kişi için
+         oda ayırtmak istiyor.
+
+Adımlar:
+
+1. Program başlatılır:
+   RezervasyonConsole konsolunda açılır
+
+2. Ana menü:
+   >>> Seçim yapınız: 1 (Bayburt Şubesi)
+
+3. Şube menüsü:
+   >>> Seçim yapınız: 1 (Yeni Rezervasyon Yap)
+
+4. Kişi sayısı seçimi:
+   📋 Kaç kişi konaklayacaksınız? 2
+
+5. İçinde buıı ödalar gösterilir:
+   5 Numaralı Oda - Gecelik: 3000 TL | Durum: Boş
+   6 Numaralı Oda - Gecelik: 3000 TL | Durum: Boş
+   ...
+
+6. Müşteri No: 5 seçer, ardından:
+   🆔 TC No: 12345678901
+   👤 Ad Soyad: Ahmet Yılmaz
+   📅 Başlangıç Tarihi (YYYY-MM-DD): 2026-05-20
+   📅 Bitiş Tarihi (YYYY-MM-DD): 2026-05-25
+
+7. Sistem Process:
+   ✓ TC Doğrulaması: ✓ 11 hane
+   ✓ Müşteri Kaydı: Yeni ise ekle
+   ✓ Tarih Kontrolleri: ✓ Geçmiş değil, Bitiş > Başlangıç
+   ✓ Kapasite Kontrolü: ✓ Oda2 kişi alabiliyor
+   ✓ Fiyat Hesaplama: 5 Gün × 3000 TL = 15000 TL
+   ✓ JSON Kayıt
+
+8. Çıktı:
+   ✅ Başarılı: Ahmet Yılmaz adına 5 nolu odaya kayıt yapıldı.
+   Gecelik: 3000 TL | Süre: 5 Gün | Toplam Fatura: 15000 TL
+
+9. Çıkış Yapmak:
+   Şube menüsü → 2 (Odadan Çıkış Yap) → Oda No: 5 → TC: 12345678901
+   ✅ Çıkış başarılı. Kayıt arşive aktarıldı.
+
+10. Arşivi Kontrol Etmek:
+    Şube menüsü → 4 (Arşiv) → Çıkış tarihi: 2026-05-25 ile kayıt
+
+
+🔒 HATA YAKALAMA VE DOĞRULAMA
+================================================================================
+
+Sistem Seviye Hatalar (try-catch ile kontrol):
+  ✓ Tarih Parsing Hatası: Input "aşşağıda" → "YYYY-MM-DD formatında giriniz"
+  ✓ Oda Bulunamadı: Input "99" (yok) → "99 numaralı oda bulunmuyor"
+  ✓ TC Müşteri Bulunamadı: → "Bu TC ile kayıtlı müşteri yok"
+  ✓ Diy değerleri: "abc" sayısal input → Sayıca giriş istenir
+
+Doğrulama Kontrolleri:
+  ✓ TC Numarası: Exactly 11 rakamsal hane
+  ✓ Tarih Formatı: YYYY-MM-DD (RegEx değil, LocalDate.parse)
+  ✓ Oda No: 1-16 arası, varolan oda
+  ✓ Tarih Mantığı: Başlangıç <= Bitiş, Geçmiş tarih yok
+  ✓ Kapasite: kişi sayısı <= oda.kapasite
+
+
+💡 GELİŞİM FİKİRLERİ (İleride Eklenebilir)
+================================================================================
+  □ Veritabanı Entegrasyonu (MySQL / MongoDB)
+  □ Kullanıcı Yönetimi ve Oturum (Login/Logout)
+  □ GUI (JavaFX Desktop Application)
+  □ REST API (Spring Boot Microservices)
+  □ İstatistiksel Analiz (Raporlar, Grafikler)
+  □ E-mail Bildirim Sistemi
+  □ Mobil Uygulama (Android/iOS)
+  □ İngilizce/Diğer Dillara Lokalizasyon
+  □ İskonto ve Promosyon Yönetimi
+  □ Kredi Kartı Ödeme Entegrasyonu
+
+
+📞 TEKNIK DESTEĞİ
+================================================================================
+Sorunlar:
+  - Gson JSON Parse Hatası → JSON dosyası yazım hatası var mı kontrol et
+  - Oda Bulunamadı → Dosyada ilgili JSON var mı kontrol et
+  - NumberFormat Hatasında → Input türünü doğrula (Metin mi sayı mı)
+
+Dosya Yükleme Hatası:
+  - JSON Dosyaları projenin root klasöründe olmalı (pom.xml ile aynı)
+  - Dosya adları tam olmalı: "Bayburt.json", "Los Angeles.json" vs.
+
+
+================================================================================
+                    © 2026 E-Otel Rezervasyon Sistemi
+                         Sürüm: 1.0 FINAL
+================================================================================
