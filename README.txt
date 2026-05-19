@@ -584,7 +584,7 @@ Doğrulama Kontrolleri:
   □ İstatistiksel Analiz (Raporlar, Grafikler)
   □ E-mail Bildirim Sistemi
   □ Mobil Uygulama (Android/iOS)
-  □ İngilizce/Diğer Dillara Lokalizasyon
+  □ İngilizce/Diğer Dillere Lokalizasyon
   □ İskonto ve Promosyon Yönetimi
   □ Kredi Kartı Ödeme Entegrasyonu
 
