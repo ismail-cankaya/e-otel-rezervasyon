@@ -11,6 +11,22 @@
     "11111111117": {
       "tcNo": "11111111117",
       "adSoyad": "deniz a"
+    },
+    "44444444444": {
+      "tcNo": "44444444444",
+      "adSoyad": "deniz k"
+    },
+    "55555555555": {
+      "tcNo": "55555555555",
+      "adSoyad": "deniza"
+    },
+    "55555555556": {
+      "tcNo": "55555555556",
+      "adSoyad": "denizü"
+    },
+    "66666666666": {
+      "tcNo": "66666666666",
+      "adSoyad": "ııııı"
     }
   },
   "odalar": {
@@ -58,13 +74,51 @@
       "odaNo": "6",
       "kapasite": 2,
       "gunlukFiyat": 1800,
-      "aktifRezervasyonlar": []
+      "aktifRezervasyonlar": [
+        {
+          "musteri": {
+            "tcNo": "44444444444",
+            "adSoyad": "deniz k"
+          },
+          "odaNo": "6",
+          "baslangicTarihi": "2026-05-20",
+          "bitisTarihi": "2026-05-25"
+        },
+        {
+          "musteri": {
+            "tcNo": "66666666666",
+            "adSoyad": "ııııı"
+          },
+          "odaNo": "6",
+          "baslangicTarihi": "2026-05-26",
+          "bitisTarihi": "2026-05-28"
+        }
+      ]
     },
     "7": {
       "odaNo": "7",
       "kapasite": 2,
       "gunlukFiyat": 1800,
-      "aktifRezervasyonlar": []
+      "aktifRezervasyonlar": [
+        {
+          "musteri": {
+            "tcNo": "55555555555",
+            "adSoyad": "deniza"
+          },
+          "odaNo": "7",
+          "baslangicTarihi": "2026-05-21",
+          "bitisTarihi": "2026-05-23"
+        },
+        {
+          "musteri": {
+            "tcNo": "55555555555",
+            "adSoyad": "deniza"
+          },
+          "odaNo": "7",
+          "baslangicTarihi": "2026-05-21",
+          "bitisTarihi": "2026-05-23"
+        }
+      ]
     },
     "8": {
       "odaNo": "8",
@@ -185,6 +239,15 @@
       "odaNo": "5",
       "baslangicTarihi": "2026-05-20",
       "bitisTarihi": "2026-05-27"
+    },
+    {
+      "musteri": {
+        "tcNo": "55555555556",
+        "adSoyad": "denizü"
+      },
+      "odaNo": "7",
+      "baslangicTarihi": "2026-05-21",
+      "bitisTarihi": "2026-05-23"
     }
   ]
 }

@@ -167,6 +167,15 @@ public class OtelYonetimi {
             musteriler.putIfAbsent(tc, new Musteri(tc, ad));
             Musteri musteri = musteriler.get(tc);
 
+            for (Oda oda : odalar.values()) {
+                for (Rezervasyon rez : oda.getAktifRezervasyonlar()) {
+                    if (rez.getMusteri().getTcNo().equals(tc)) {
+                        return "Hata: İşlem reddedildi! " + ad + " şu anda zaten " + oda.getOdaNo() +
+                                " numaralı odada konaklıyor. Aynı TC ile yeni odaya veya bekleme listesine kayıt yapılamaz.";
+                    }
+                }
+            }
+
             Oda talepEdilenOda = odalar.get(odaNo);
             if (talepEdilenOda == null) {
                 return "Hata: " + odaNo + " numaralı bir oda sistemde bulunmuyor!";

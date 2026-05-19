@@ -186,6 +186,8 @@ public class RezervasyonApplication extends Application {
             String aktifSube = cmbAktifSube.getValue();
             StringBuilder islemSonucu = new StringBuilder();
 
+            java.util.Set<String> girilenTcler = new java.util.HashSet<>();
+
             for (javafx.scene.Node node : dinamikMusteriKutusu.getChildren()) {
                 if (node instanceof HBox) {
                     HBox satir = (HBox) node;
@@ -196,11 +198,19 @@ public class RezervasyonApplication extends Application {
                     String ad = txtAd.getText().trim();
 
                     if(tc.matches("\\d{11}") && !ad.isEmpty()) {
-                        String sonuc = merkez.subeGetir(aktifSube).musteriKayitVeRezervasyon(
-                                tc, ad, secilenOda, dpBas.getValue().toString(), dpBit.getValue().toString());
-                        islemSonucu.append(sonuc).append("\n");
+
+                        if (girilenTcler.contains(tc)) {
+                            islemSonucu.append("Hata: Formda aynı kimlik numarasına sahip birden fazla kayıt bulunamaz!\n");
+                        } else {
+                            girilenTcler.add(tc);
+
+                            String sonuc = merkez.subeGetir(aktifSube).musteriKayitVeRezervasyon(
+                                    tc, ad, secilenOda, dpBas.getValue().toString(), dpBit.getValue().toString());
+                            islemSonucu.append(sonuc).append("\n");
+                        }
+
                     } else {
-                        islemSonucu.append("Hata: Geçersiz TC (Sadece 11 hane RAKAM olmalı) veya boş isim!\n");
+                        islemSonucu.append("Hata: Kimlik numarası 11 hane rakamdan oluşmalı ve isim alanı boş bırakılmamalıdır!\n");
                     }
                 }
             }
