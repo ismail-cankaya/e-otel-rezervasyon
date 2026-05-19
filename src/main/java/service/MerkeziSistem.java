@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MerkeziSistem {
-    // Şubeleri tutacağımız ana veri yapısı
+    // subelerin tutuldugu veri yapisi
     private Map<String, OtelYonetimi> subeler;
 
     public MerkeziSistem() {
