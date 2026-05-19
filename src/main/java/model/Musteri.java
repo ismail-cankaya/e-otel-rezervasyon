@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class Musteri implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    //  Değişkenler private yapılarak dışarıdan doğrudan erişime kapatıldı
     private String tcNo;
     private String adSoyad;
 
@@ -14,7 +13,6 @@ public class Musteri implements Serializable {
         this.adSoyad = adSoyad;
     }
 
-    //  Dışarıdan okuma yapabilmek için Getter metotları eklendi
     public String getTcNo() {
         return tcNo;
     }
@@ -23,7 +21,6 @@ public class Musteri implements Serializable {
         return adSoyad;
     }
 
-    // Dışarıdan veriyi değiştirmek gerekirse diye Setter metotları eklendi
     public void setTcNo(String tcNo) {
         this.tcNo = tcNo;
     }
