@@ -190,6 +190,12 @@ MerkeziSistem (Zincir Yönetimi) Sınıfı:
 🎨 APPLICATION KATMANI - KULLANICILAR ARAYÜZÜ
 ================================================================================
 
+Proje İKİ Farklı Arayüzle Sunulur:
+
+1️⃣ CLI ARAYÜZÜ (Terminal / Konsol) - RezervasyonConsole.java
+========================================================================
+Açıklama: Scanner kullanarak komut satırında çalışan metin tabanlı arayüz
+
 Ana Menü İşleyişi:
   while(true) döngüsü içinde çalışır
 
@@ -236,18 +242,95 @@ YENİ RESERVASYONveri Girişi:
 
 ODADAN ÇIKIŞI:
   🚪 Oda Numarası:
-  🆔 TC No: (Doğrulama - şubu bu TC kayıtlı mı?)
+  🆔 TC No: (Doğrulama - şube bu TC kayıtlı mı?)
 
   Başarı:
     ✅ Çıkış başarılı. Kayıt arşive aktarıldı.
     (+ Bekleme listesine otomatik yerleştirme kontrolü)
 
- RAPORLAR:
-   📋 Merkezi Rapor: Zincir geneli statistik
-   📋 Şube Raporu: İçerik olmadığında "Rapor Boş" mesajı
-   📋 Bekleme Listesi: FIFO sırasına göre müşteriler
-   📋 Arşiv: KronolojikRezervasyonAgaci ile tarih sırasında çıkış yapan müşteriler
-             (In-order traversal sonucu kronolojik sırada gösterilir)
+RAPORLAR (CLI):
+  📋 Merkezi Rapor: Zincir geneli statistik
+  📋 Şube Raporu: İçerik olmadığında "Rapor Boş" mesajı
+  📋 Bekleme Listesi: FIFO sırasına göre müşteriler
+  📋 Arşiv: KronolojikRezervasyonAgaci ile tarih sırasında çıkış yapan müşteriler
+            (In-order traversal sonucu kronolojik sırada gösterilir)
+
+---
+
+2️⃣ JAVAFX GUI ARAYÜZÜ (Masaüstü Uygulaması) - RezervasyonApplication.java
+========================================================================
+Açıklama: JavaFX ile geliştirilmiş grafiksel kullanıcı arayüzü uygulaması
+Main Class (pom.xml'de): application.RezervasyonApplication
+
+Başlangıç Komutu:
+  🖥️ IntelliJ IDEA: RezervasyonApplication.java → Sağ tıkla → Run
+  🖥️ Terminal: mvn javafx:run
+
+Ana Pencere Özellikleri:
+  ✅ Şube Seçim ComboBox (Çorlu / Bayburt / Los Angeles / Las Vegas)
+  ✅ Tab-Tabanlı Menü Sistemi (3 Sekme)
+  ✅ Pencere Başlığı: "E-Otel Yönetim Sistemi - Merkezi Sistem"
+
+SEKME 1 - "Yeni Rezervasyon" Sekmesi:
+  Bileşenler:
+    - Kişi Sayısı: ComboBox (1, 2, 3, 4)
+    - Giriş Tarihi: DatePicker
+    - Çıkış Tarihi: DatePicker
+    - "Uygun Odaları Getir" Butonu
+    - Mevcut Oda Kombo: Arama sonuçlarıyla doldurulur
+
+  Dinamik Misafir Girişi:
+    - Seçilen kişi sayısı için otomatik input alanları üretilir
+    - Her kişi satırı: [Sıra] Kişi: [TC TextField] [Ad Soyad TextField]
+
+  Aksiyonlar:
+    - "Tüm Kişileri Kaydet" Butonu (Yeşil)
+    - "Çıkış / Temizle" Butonu (Kırmızı)
+
+  Çıktılar:
+    - Başarı/Hata Mesajları: Renkli Label
+    - Başarı: Yeşil (#27ae60)
+    - Hata: Kırmızı (#e74c3c)
+
+SEKME 2 - "Çıkış (Check-Out)" Sekmesi:
+  Bileşenler:
+    - Çıkış Yapılacak Oda No: ComboBox (1-16)
+    - Müşteri TC No: TextField
+    - "Çıkış Yap" Butonu (Mavi)
+
+  Çıktılar:
+    - İşlem Sonuç Mesajı: Label'da gösterilir
+    - Başarılı çıkıştan sonra formlar temizlenir
+
+SEKME 3 - "Listeler ve Arşiv" Sekmesi:
+  Raporlama Butonları:
+    - Bekleme Listesi (Turuncu)
+    - Arşiv (Geçmiş) (Mor)
+    - İçeridekiler (Aktif) (Yeşil)
+    - Merkezi Zincir Raporu (Koyu Gri)
+
+  Müşteri Arama Alanı:
+    - TC ile Arama: [TextField] [Müşteri Ara Butonu]
+
+  Sonuçlar:
+    - TextArea'da detaylı bilgiler gösterilir
+    - Monospaced font: Tablosu görünümü
+    - Font Boyutu: 13px
+    - Kaydırılabilir alan
+
+Tasarım Özellikleri:
+  ✅ Renkli UI: Material Design Renkler
+     - Turuncu (#f39c12): Uyarılar, arama
+     - Yeşil (#27ae60): Başarı
+     - Kırmızı (#e74c3c): Hata
+     - Mavi (#3498db): İşlem
+     - Mor (#8e44ad): Arşiv
+     - Koyu (#2c3e50): Merkez
+  ✅ Dinamik Form: Kişi sayısına göre otomatik input üretimi
+  ✅ Doğrulama: Girdi validasyonu ile tabı geçişleri engelleme
+  ✅ Responsive: VBox.setVgrow() ile otomatik boyutlandırma
+  ✅ Komfortable: Padding, spacing ile boşluklar
+  ✅ Okunabilirlik: Labeller, yardımcı metinler
 
 
 ⚙️ VERİ YAPISILARI ve ALGORİTMALER
@@ -381,9 +464,10 @@ Bayburt.json:
 ================================================================================
 
 GEREKSINIMLER:
-  ✓ Java 17 (JDK)
+  ✓ Java 24 (JDK 24) - pom.xml'de maven.compiler.source/target
   ✓ Maven 3.6+ (Build aracı)
-  ✓ IDE: IntelliJ IDEA, Eclipse, VS Code + Extension
+  ✓ JavaFX 17.0.6 (GUI kütüphaneleri - pom.xml'de tanımlı)
+  ✓ IDE: IntelliJ IDEA, Eclipse, VS Code + Java Extension Pack
   ✓ Git (Versiyon kontrolü - isteğe bağlı)
 
 ADIM 1 - Proje Açma:
@@ -398,14 +482,26 @@ ADIM 2 - Bağımlılıkları İndirme:
 
 ADIM 3 - Projeyi Çalıştırma:
 
-  İntelliJ IDEA'da:
-    1. RezervasyonConsole.java dosyasını aç
-    2. Sağ tıkla → "Run 'RezervasyonConsole.main()'"
-    Veya: Ctrl+Shift+F10 (Windows/Linux)
+  ⚙️ CLI ARAYÜZÜ (RezervasyonConsole):
 
-  Terminal Üzerinden:
-    mvn clean compile
-    mvn exec:java -Dexec.mainClass="application.RezervasyonConsole"
+    IntelliJ IDEA'da:
+      1. RezervasyonConsole.java dosyasını aç
+      2. Sağ tıkla → "Run 'RezervasyonConsole.main()'"
+      Veya: Ctrl+Shift+F10 (Windows/Linux)
+
+    Terminal Üzerinden:
+      mvn clean compile
+      mvn exec:java -Dexec.mainClass="application.RezervasyonConsole"
+
+  🖥️ JAVAFX GUI ARAYÜZÜ (RezervasyonApplication):
+
+    IntelliJ IDEA'da:
+      1. RezervasyonApplication.java dosyasını aç
+      2. Sağ tıkla → "Run 'RezervasyonApplication.main()'"
+      Veya: Ctrl+Shift+F10 (Windows/Linux)
+
+    Terminal Üzerinden:
+      mvn clean compile javafx:run
 
 ADIM 4 - Programı Kapatma:
   Ana menüden "5 - Çıkış" seçeneği ile veya Ctrl+C
@@ -506,6 +602,7 @@ Dosya Yükleme Hatası:
 
 
 ================================================================================
-                    © 2026 E-Otel Rezervasyon Sistemi
-                         Sürüm: 1.0 FINAL
+                     © 2026 E-Otel Rezervasyon Sistemi
+                          Sürüm: 2.0 FINAL
+                    (CLI + JavaFX GUI + BST Arşiv Sistemi)
 ================================================================================
