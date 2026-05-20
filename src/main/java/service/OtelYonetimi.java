@@ -259,13 +259,13 @@ public class OtelYonetimi {
     }
 
     public String gecmisRezervasyonlariGoster() {
-        List<Rezervasyon> kronolojikListe = tamamlananRezervasyonlar.toList(); // YENİ: Ağaçtan sıralı listeyi çek
+        List<Rezervasyon> kronolojikListe = tamamlananRezervasyonlar.toList(); //  Ağaçtan sıralı listeyi çek
 
         if (kronolojikListe == null || kronolojikListe.isEmpty()) {
             return "Arşivde hiç kayıt yok.";
         }
         StringBuilder sb = new StringBuilder();
-        for (Rezervasyon rez : kronolojikListe) { // YENİ: Sıralı liste üzerinde dön
+        for (Rezervasyon rez : kronolojikListe) { // Sıralı liste üzerinde dön
             sb.append("Çıkış Tarihi: ").append(rez.getBitisTarihi()).append(" | Detay: ").append(rez).append("\n");
         }
         return sb.toString();
